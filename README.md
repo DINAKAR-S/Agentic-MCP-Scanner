@@ -124,29 +124,7 @@ Key components:
 - Supply chain and configuration issues.
 
 ## Example Output
-```json
-{
-  "executive_summary": "Critical MCP vulnerabilities detected requiring immediate attention",
-  "summary": {
-    "critical": 2,
-    "high": 5,
-    "medium": 8,
-    "low": 12,
-    "total": 27,
-    "repos_scanned": 3,
-    "external_vulns": 15
-  },
-  "vulnerabilities": [
-    {
-      "type": "prompt_injection",
-      "line": 45,
-      "code": "prompt += user_input",
-      "file": "src/agent.py",
-      "pattern": "prompt\\s*\\+\\s*user_input"
-    }
-  ]
-}
-```
+See sample_git-mcp-server_security_report.md for detailed output
 
 ## Contributing
 
