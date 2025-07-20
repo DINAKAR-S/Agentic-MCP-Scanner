@@ -1,0 +1,11 @@
+agno
+firecrawl
+fpdf
+google-generativeai
+python-dotenv
+nest_asyncio
+colorama
+tqdm
+gitingest
+openai
+duckduckgo-search
