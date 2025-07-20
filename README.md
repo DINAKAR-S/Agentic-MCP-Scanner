@@ -48,7 +48,8 @@ pip install .
 Create a `.env` file in your project directory:
 ```env
 GOOGLE_API_KEY=your_google_api_key_here
-FIRECRAWL_API_KEY=your_firecrawl_api_key_here  # Optional
+FIRECRAWL_API_KEY=your_firecrawl_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
 ## Usage
@@ -91,7 +92,6 @@ result = team.run_analysis(
 Files generated:
 - `{repo_name}_security_report.md` — Detailed security analysis report.
 - `external_vulnerabilities.md` — Real-time threat intelligence summary.
-- `vulnerabilities.txt` — Structured vulnerability listing.
 
 Reports include:
 - Executive Summary
