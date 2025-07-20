@@ -124,7 +124,7 @@ Key components:
 - Supply chain and configuration issues.
 
 ## Example Output
-See sample_git-mcp-server_security_report.md for detailed output
+See [Sample Report](https://github.com/DINAKAR-S/Agentic-MCP-Scanner/blob/main/sample_git-mcp-server_security_report.md) for detailed output.
 
 ## Contributing
 
