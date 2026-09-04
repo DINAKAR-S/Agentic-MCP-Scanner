@@ -1,7 +1,28 @@
-from setuptools import setup, find_packages
+import os
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+from setuptools import find_packages, setup
+
+# The README lives at the repository root, one level above this file, and pip
+# runs setup.py with an unpredictable working directory. Resolve it relative to
+# this file and degrade gracefully if it is missing, rather than failing the
+# install with a FileNotFoundError.
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_DESCRIPTION = ("Vulnerability detection for Model Context Protocol codebases, "
+                "with a reproducible benchmark")
+
+
+def _long_description() -> str:
+    for candidate in (os.path.join(_HERE, "README.md"),
+                      os.path.join(os.path.dirname(_HERE), "README.md")):
+        try:
+            with open(candidate, encoding="utf-8") as fh:
+                return fh.read()
+        except OSError:
+            continue
+    return _DESCRIPTION
+
+
+long_description = _long_description()
 
 # Core install stays deliberately small: detection, scoring and reporting run with
 # no network access and no API key. Everything else is an extra.
@@ -20,7 +41,7 @@ setup(
     version="0.2.0",
     author="Dinakar S",
     author_email="dinakars2003@gmail.com",
-    description="Vulnerability detection for Model Context Protocol codebases, with a reproducible benchmark",
+    description=_DESCRIPTION,
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/DINAKAR-S/Agentic-MCP-Scanner/",
