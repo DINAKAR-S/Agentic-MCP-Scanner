@@ -40,11 +40,11 @@ class ThreatIntelClient:
         failures = 0
 
         try:
-            search = app.search("MCP Model Context Protocol vulnerability", limit=10)
+            search = app.search("MCP A2A LLM vulnerability", limit=10)
             for r in getattr(search, "data", []) or []:
                 results.append({
                     "name": r.get("title") or "Untitled",
-                    "description": (r.get("description") or "")[:300],
+                    "description": (r.get("description") or "")[:200],
                     "source_url": r.get("url") or "",
                 })
         except Exception as exc:
@@ -56,7 +56,7 @@ class ThreatIntelClient:
                 page = app.scrape_url(url, formats=["markdown"])
                 results.append({
                     "name": getattr(page, "title", None) or url,
-                    "description": (getattr(page, "description", "") or "")[:300],
+                    "description": (getattr(page, "description", "") or "")[:200],
                     "source_url": url,
                 })
             except Exception as exc:

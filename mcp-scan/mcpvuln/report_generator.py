@@ -40,6 +40,11 @@ class DeterministicReporter:
           f"{contract['tool']['name']} {contract['tool']['version']} "
           f"(contract schema {contract['schema_version']}).\n")
 
+        # Algorithm 2, step 13: top-line risk summary, prepended for leadership.
+        if contract.get("leadership_summary"):
+            a("## Risk summary\n")
+            a(contract["leadership_summary"] + "\n")
+
         a("## Summary\n")
         a("| | |\n|---|---|")
         a(f"| Files scanned | {scan['files_scanned']} |")
@@ -79,6 +84,9 @@ class DeterministicReporter:
                 a(f"- **Detector confidence:** {f['confidence']}  "
                   f"(rule `{f['pattern_id']}`)")
                 a(f"\n{f['description']}\n")
+                # Algorithm 2, step 6: business-facing summary.
+                if f.get("executive_summary"):
+                    a(f"**In plain terms.** {f['executive_summary']}\n")
                 if f.get("code"):
                     a("```\n" + f["code"] + "\n```")
                 if f.get("remediation"):

@@ -266,6 +266,43 @@ PATTERNS: List[Pattern] = [
         remediation="Bind a nonce or timestamp to each message and reject duplicates.",
     ),
     Pattern(
+        id="mcp.session_cache.no_tenant_scope",
+        category="cross_tenant_context_bleed", layer=LAYER_MCP,
+        # Algorithm 3: a session or context cache keyed by something that is not
+        # bound to the tenant, so one tenant's context can be served to another.
+        regex=(
+            # a session/context cache subscripted by a key with no tenant in it
+            r"(?:session|context|tenant|request)\w*cache\s*\[\s*"
+            r"(?![^\]]*(?:tenant|customer|org|account|user)\w*(?:id|key))[^\]]{0,80}\]"
+            r"|"
+            # any cache subscripted by a fixed, process-wide key
+            r"\w*cache\s*\[\s*['\"](?:session|context|current|global|default)['\"]\s*\]"
+            r"|"
+            # a process-wide context/session store held in a global
+            r"\bglobal_(?:context|cache|session|state)\b"
+        ),
+        description=("Session or context cache keyed without tenant scoping. Under "
+                     "concurrent load one tenant's cached context can be returned to "
+                     "another."),
+        confidence=0.60, allow_in_string=True,
+        cvss=_cvss(av="N", ac="H", pr="L", vc="H", vi="L", sc="H"),
+        remediation=("Key the cache on a composite, cryptographically distinct "
+                     "tenant identifier, and assert the tenant on read as well as "
+                     "on write."),
+    ),
+    Pattern(
+        id="mcp.session_cache.module_level_context",
+        category="cross_tenant_context_bleed", layer=LAYER_MCP,
+        regex=r"(?m)^(?:_?(?:session|context|conversation|memory)_?(?:store|cache|state|map))"
+              r"\s*(?::\s*[^=\r\n]+)?=\s*(?:\{\s*\}|dict\(\s*\)|\[\s*\])",
+        description=("Module-level mutable session or context store shared across all "
+                     "requests, with no per-tenant partition."),
+        confidence=0.55,
+        cvss=_cvss(av="N", ac="H", pr="L", vc="H", sc="L"),
+        remediation=("Scope the store per tenant, or move it behind an accessor that "
+                     "requires a tenant identifier."),
+    ),
+    Pattern(
         id="mcp.tool_poisoning.description_sink",
         category="tool_poisoning", layer=LAYER_MCP,
         regex=r"(?:tool|function)[_\.]?(?:description|schema|manifest)\s*[:=]\s*(?:[a-z_]+\.(?:get|read|fetch|text|json)\s*\(|requests\.|await\s+fetch)",

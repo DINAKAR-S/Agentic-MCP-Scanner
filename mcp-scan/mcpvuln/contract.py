@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional
 
 from . import __version__
 from .scoring import score_finding
+from .summary import finding_summary, leadership_summary
 
 SCHEMA_VERSION = "1.0"
 
@@ -29,6 +30,9 @@ def build(repository: str, findings: Iterable[dict], *,
     v4.0 vectors and SSVC priorities. Sorted most severe first.
     """
     scored = [score_finding(f) for f in findings]
+    for f in scored:
+        # Algorithm 2, step 6: business-facing summary, generated deterministically.
+        f["executive_summary"] = finding_summary(f)
     scored.sort(key=lambda f: (-f["risk_index"], -f["confidence"], f["file"], f["line"]))
 
     reportable = [f for f in scored if not f.get("informational")]
@@ -40,7 +44,7 @@ def build(repository: str, findings: Iterable[dict], *,
         by_category[f["category"]] = by_category.get(f["category"], 0) + 1
         by_severity[f["cvss_severity"]] = by_severity.get(f["cvss_severity"], 0) + 1
 
-    return {
+    contract = {
         "schema_version": SCHEMA_VERSION,
         "tool": {"name": "mcpvuln", "version": __version__},
         "generated_at": _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
@@ -59,6 +63,9 @@ def build(repository: str, findings: Iterable[dict], *,
         "findings": scored,
         "external_intel": external_intel or [],
     }
+    # Algorithm 2, step 13: top-line risk summary prepended for leadership.
+    contract["leadership_summary"] = leadership_summary(contract)
+    return contract
 
 
 def dumps(contract: dict, indent: int = 2) -> str:
