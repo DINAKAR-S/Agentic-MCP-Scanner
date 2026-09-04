@@ -24,11 +24,11 @@ That is not a hypothetical. It is what version 0.1.0 of **this tool** did, measu
 |---|---|---|
 | Scanner returns 3,000 findings | Sounds thorough | You measure it on clean code and learn 3,000 is the noise floor |
 | A pattern matches the word "should" | Ships, nobody notices | CI fails the false-positive budget |
-| Someone asks "what is your precision?" | No answer is possible: you never scanned code without vulnerabilities | 0.009 findings per 100 LOC on 285k lines of clean code |
+| Someone asks "what is your precision?" | No answer is possible: you never scanned code without vulnerabilities | 0.008 findings per 100 LOC on 285k lines of clean code |
 | A rule fires on a security control | Reported as a vulnerability | Regression test keeps it silent |
 | CVSS score for the same finding | Differs between runs, a model wrote it | Computed from the FIRST spec, identical every run |
 
-**Result of fixing that:** on 285,463 lines of clean, officially maintained MCP code, findings went from **3,642 to 26**, a 142x reduction, with 5 above the reporting confidence threshold.
+**Result of fixing that:** on 285,463 lines of clean, officially maintained MCP code, findings went from **3,642 to 23**, a 160x reduction, with **one** above the reporting confidence threshold, and that one is a genuine bug in the SDK.
 
 ---
 
@@ -103,7 +103,7 @@ Clones two official MCP reference implementations at pinned commits, scans them,
 | Version | Findings | Per 100 LOC |
 |---|---|---|
 | v0.1.0 | 3,642 | 1.28 |
-| v0.2.0 | 26 | 0.009 |
+| v0.2.0 | 23 | 0.008 |
 
 ## What is not built yet
 

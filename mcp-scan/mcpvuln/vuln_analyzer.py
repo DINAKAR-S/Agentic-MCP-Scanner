@@ -43,8 +43,13 @@ SKIP_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", "dist",
              "site-packages", ".next", "target"}
 
 # Paths that are documentation or translation rather than shipped behaviour.
-DOC_DIR_RE = re.compile(r"(?:^|[\\/])(?:docs?|i18n|locales?|translations?|examples?|"
-                        r"samples?|website|\.github)(?:[\\/]|$)", re.IGNORECASE)
+DOC_DIR_RE = re.compile(
+    r"(?:^|[\\/])"
+    r"(?:docs?|docs?_src|doc_src|i18n|locales?|translations?|examples?|"
+    r"samples?|snippets?|tutorials?|website|\.github)"
+    r"(?:[\\/]|$)"
+    r"|(?:^|[\\/])tutorial\w*\.[a-z]+$",
+    re.IGNORECASE)
 TEST_PATH_RE = re.compile(r"(?:^|[\\/])(?:tests?|__tests__|spec|fixtures?)(?:[\\/]|$)|"
                           r"(?:^|[\\/])(?:test_[^\\/]*|[^\\/]*_test)\.[a-z]+$", re.IGNORECASE)
 
@@ -104,7 +109,16 @@ def _python_masked_spans(source: str) -> Tuple[List[Tuple[int, int]], List[Tuple
             if tok.type == tokenize.COMMENT:
                 comments.append((off(tok.start[0], tok.start[1]), off(tok.end[0], tok.end[1])))
             elif tok.type == tokenize.STRING:
-                strings.append((off(tok.start[0], tok.start[1]), off(tok.end[0], tok.end[1])))
+                span = (off(tok.start[0], tok.start[1]), off(tok.end[0], tok.end[1]))
+                # A triple-quoted string is documentation, not a configuration
+                # value. allow_in_string exists so a shell command, SQL statement,
+                # path or URL in a literal is still seen; a docstring is never any
+                # of those, so it is treated like a comment.
+                stripped = tok.string.lstrip("rbufRBUF")
+                if stripped[:3] in ('"""', "'''"):
+                    comments.append(span)
+                else:
+                    strings.append(span)
     except (tokenize.TokenError, IndentationError, SyntaxError, ValueError):
         # Unparseable file. Fall back to the line heuristic.
         return _heuristic_masked_spans(source)

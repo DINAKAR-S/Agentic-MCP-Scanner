@@ -26,5 +26,12 @@
     "true_positives_in_sample": 0,
     "precision_upper_bound_95": 0.12,
     "measured_with": "v0.1.0 pattern set, same corpus and same file-extension set"
+  },
+  "baseline_v0_2_0": {
+    "note": "Measured after the detection rewrite and the docstring fix.",
+    "raw_findings": 23,
+    "reportable": 1,
+    "per_100_loc": 0.008,
+    "adjudicated": "all 23 reviewed by hand; the single reportable finding (subprocess.run([...], shell=True) in src/mcp/cli/cli.py) is a true positive, the remaining 22 are informational and are test fixtures, documentation examples, or deliberately hostile hostnames inside the SDK's own security tests"
   }
 }
