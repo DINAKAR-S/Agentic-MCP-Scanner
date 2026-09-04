@@ -24,8 +24,9 @@ import io
 import os
 import re
 import tokenize
-from dataclasses import dataclass, asdict
-from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
+from collections.abc import Sequence
+from dataclasses import asdict, dataclass
+from typing import Dict, List, Optional, Tuple
 
 from .patterns import PATTERNS, Pattern
 
@@ -285,7 +286,7 @@ class VulnerabilityAnalyzer:
                     continue
                 full = os.path.join(dirpath, fn)
                 try:
-                    content = io.open(full, encoding="utf-8", errors="ignore").read()
+                    content = open(full, encoding="utf-8", errors="ignore").read()
                 except OSError:
                     continue
                 rel = os.path.relpath(full, root).replace("\\", "/")

@@ -232,7 +232,6 @@ def test_scoped_ignore_does_not_silence_other_rules():
 
 def test_pattern_module_does_not_flag_itself():
     """The rule definitions contain the literal strings the rules look for."""
-    import io as _io, os as _os
     from mcpvuln import patterns as _p
-    src = _io.open(_p.__file__, encoding="utf-8").read()
+    src = open(_p.__file__, encoding="utf-8").read()
     assert VulnerabilityAnalyzer().analyze(src, "mcpvuln/patterns.py") == []

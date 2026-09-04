@@ -1,6 +1,5 @@
 """CLI contract."""
 
-import os
 
 from mcpvuln.cli import main
 

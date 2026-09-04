@@ -10,7 +10,8 @@ from __future__ import annotations
 
 import datetime as _dt
 import json
-from typing import Any, Dict, Iterable, List, Optional
+from collections.abc import Iterable
+from typing import Any, Dict, List, Optional
 
 from . import __version__
 from .scoring import score_finding

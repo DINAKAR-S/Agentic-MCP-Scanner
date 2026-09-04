@@ -33,7 +33,7 @@ class ThreatIntelClient:
             log.info("FIRECRAWL_API_KEY not set, skipping threat intelligence")
             return []
 
-        from firecrawl import FirecrawlApp                # lazy import
+        from firecrawl import FirecrawlApp  # lazy import
 
         app = FirecrawlApp(api_key=self.api_key)
         results: List[Dict[str, str]] = []

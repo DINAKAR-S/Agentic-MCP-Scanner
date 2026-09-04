@@ -17,7 +17,7 @@ from __future__ import annotations
 import logging
 import os
 import textwrap
-from typing import Dict, Iterable, List, Optional
+from typing import List, Optional
 
 log = logging.getLogger("mcpvuln.report")
 
@@ -41,7 +41,7 @@ class DeterministicReporter:
           f"(contract schema {contract['schema_version']}).\n")
 
         a("## Summary\n")
-        a(f"| | |\n|---|---|")
+        a("| | |\n|---|---|")
         a(f"| Files scanned | {scan['files_scanned']} |")
         a(f"| Lines scanned | {scan['lines_scanned']:,} |")
         a(f"| Reportable findings | {scan['findings_reportable']} |")
@@ -144,7 +144,7 @@ class NarrativeReporter:
 
     def _client(self):
         if self._model is None:
-            import google.generativeai as genai       # imported lazily
+            import google.generativeai as genai  # imported lazily
             genai.configure(api_key=self.api_key)
             self._model = genai.GenerativeModel(self.model_name)
         return self._model

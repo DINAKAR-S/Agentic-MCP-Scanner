@@ -8,7 +8,6 @@ here means they can be overridden without editing code:
 
 from __future__ import annotations
 
-import io
 import os
 from typing import List
 
@@ -30,8 +29,9 @@ DEFAULT_INTEL_SOURCES: List[str] = [
 def intel_sources() -> List[str]:
     path = os.environ.get("MCPVULN_INTEL_SOURCES")
     if path and os.path.isfile(path):
-        with io.open(path, encoding="utf-8") as fh:
-            urls = [l.strip() for l in fh if l.strip() and not l.startswith("#")]
+        with open(path, encoding="utf-8") as fh:
+            urls = [line.strip() for line in fh
+                    if line.strip() and not line.startswith("#")]
         if urls:
             return urls
     return list(DEFAULT_INTEL_SOURCES)

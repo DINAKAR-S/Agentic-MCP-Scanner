@@ -21,9 +21,9 @@ clean official MCP code (see benchmark/):
 5. Shell pipes are escaped. ``|`` inside a regex is alternation.
 """
 
+import re
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
-import re
 
 # Taxonomy layers. Section 3 of the paper is organised on this axis, and the
 # benchmark reports against it.

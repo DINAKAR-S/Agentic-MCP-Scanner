@@ -2,8 +2,15 @@
 
 import pytest
 
-from mcpvuln.scoring import (build_vector, score_cvss, ssvc_decision, infer_ssvc,
-                             risk_index, severity_from_score, score_finding)
+from mcpvuln.scoring import (
+    build_vector,
+    infer_ssvc,
+    risk_index,
+    score_cvss,
+    score_finding,
+    severity_from_score,
+    ssvc_decision,
+)
 
 
 def test_vector_is_wellformed():

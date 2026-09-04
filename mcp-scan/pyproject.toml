@@ -4,7 +4,10 @@ target-version = "py39"
 exclude = ["benchmark/corpus"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "UP", "B"]
+# Correctness and hygiene rules only. UP (pyupgrade) is deliberately excluded:
+# the package supports Python 3.9, and rewriting typing.List to list or percent
+# formatting to f-strings is churn rather than a defect class.
+select = ["E", "F", "W", "I", "B"]
 ignore = ["E501", "B008"]
 
 [tool.pytest.ini_options]

@@ -24,7 +24,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(HERE))
 
-from mcpvuln.vuln_analyzer import VulnerabilityAnalyzer, SCANNABLE, SKIP_DIRS  # noqa: E402
+from mcpvuln.vuln_analyzer import SCANNABLE, SKIP_DIRS, VulnerabilityAnalyzer  # noqa: E402
 
 CORPUS = json.load(open(os.path.join(HERE, "corpus.json"), encoding="utf-8"))
 CHECKOUTS = os.path.join(HERE, "corpus")

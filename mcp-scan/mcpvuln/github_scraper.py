@@ -29,7 +29,7 @@ class GitHubScraper:
                             include_patterns=None, exclude_patterns=None,
                             max_file_size: Optional[int] = None,
                             token: Optional[str] = None) -> List[dict]:
-        from gitingest import ingest                      # lazy import
+        from gitingest import ingest  # lazy import
 
         results: List[dict] = []
         for url in urls:

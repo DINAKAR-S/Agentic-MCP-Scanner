@@ -17,7 +17,8 @@ from typing import List, Optional
 
 from . import __version__
 from . import contract as contract_mod
-from .patterns import PATTERNS, validate as validate_patterns
+from .patterns import PATTERNS
+from .patterns import validate as validate_patterns
 from .pipeline import SecurityAnalysisPipeline
 
 

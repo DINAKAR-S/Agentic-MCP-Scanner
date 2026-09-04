@@ -11,7 +11,7 @@ the published decision tree, evaluated as a tree.
 
 from __future__ import annotations
 
-from typing import Dict, Optional, Tuple
+from typing import Dict, Tuple
 
 try:
     from cvss import CVSS4

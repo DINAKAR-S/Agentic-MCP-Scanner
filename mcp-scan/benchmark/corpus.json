@@ -6,8 +6,8 @@
       "name": "python-sdk",
       "url": "https://github.com/modelcontextprotocol/python-sdk",
       "commit": "d060b36e1d095ef6e93e07ba5d59bb69b2ad449a",
-      "expected_files": 1640,
-      "expected_lines": 260599
+      "expected_files": 1645,
+      "expected_lines": 260948
     },
     {
       "name": "servers",
@@ -24,6 +24,7 @@
     "per_100_loc": 1.28,
     "adjudicated_sample": 25,
     "true_positives_in_sample": 0,
-    "precision_upper_bound_95": 0.12
+    "precision_upper_bound_95": 0.12,
+    "measured_with": "v0.1.0 pattern set, same corpus and same file-extension set"
   }
 }

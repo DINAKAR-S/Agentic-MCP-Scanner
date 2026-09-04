@@ -15,7 +15,6 @@ Naming it accurately costs nothing and makes the architecture reviewable.
 
 from __future__ import annotations
 
-import io
 import logging
 import os
 from typing import Dict, List, Optional, Tuple
@@ -50,7 +49,7 @@ class SecurityAnalysisPipeline:
                     continue
                 full = os.path.join(dirpath, fn)
                 try:
-                    content = io.open(full, encoding="utf-8", errors="ignore").read()
+                    content = open(full, encoding="utf-8", errors="ignore").read()
                 except OSError:
                     continue
                 rel = os.path.relpath(full, root).replace("\\", "/")
@@ -69,7 +68,7 @@ class SecurityAnalysisPipeline:
                 label = os.path.basename(os.path.abspath(target)) or "."
             return label, files, lines
 
-        from .github_scraper import GitHubScraper          # lazy: needs gitingest
+        from .github_scraper import GitHubScraper  # lazy: needs gitingest
         repos = GitHubScraper().scrape_github_repos([target])
         if not repos:
             raise RuntimeError(f"could not ingest {target}")

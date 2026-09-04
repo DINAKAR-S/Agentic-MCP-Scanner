@@ -4,7 +4,7 @@ import re
 
 import pytest
 
-from mcpvuln.patterns import PATTERNS, LAYER_LLM, LAYER_AGENT, LAYER_MCP, LAYER_WEB, validate
+from mcpvuln.patterns import LAYER_AGENT, LAYER_LLM, LAYER_MCP, LAYER_WEB, PATTERNS, validate
 
 
 def test_pattern_set_is_valid():
@@ -55,7 +55,7 @@ def test_confidence_in_range():
 
 
 def test_ignorecase_is_opt_in_not_global():
-    """Regression: global IGNORECASE made `DES\s*\(` match `includes(`."""
+    r"""Regression: global IGNORECASE made `DES\s*\(` match `includes(`."""
     for p in PATTERNS:
         if p.ignorecase and re.search(r"\b(?:DES|RC4|MD5|SHA)\b", p.regex):
             pytest.fail(f"{p.id}: crypto-algorithm pattern must be case-sensitive")
