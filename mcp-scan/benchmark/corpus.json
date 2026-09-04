@@ -1,0 +1,29 @@
+{
+  "description": "Benign control corpus. Actively maintained official MCP reference implementations, carrying no known vulnerabilities of the classes under test. Any finding raised against these is a candidate false positive.",
+  "pinned": "2026-09-04",
+  "repos": [
+    {
+      "name": "python-sdk",
+      "url": "https://github.com/modelcontextprotocol/python-sdk",
+      "commit": "d060b36e1d095ef6e93e07ba5d59bb69b2ad449a",
+      "expected_files": 1640,
+      "expected_lines": 260599
+    },
+    {
+      "name": "servers",
+      "url": "https://github.com/modelcontextprotocol/servers",
+      "commit": "d73f99efbfd40c3aa1b61e88728b3d49fb52608f",
+      "expected_files": 134,
+      "expected_lines": 24515
+    }
+  ],
+  "baseline_v0_1_0": {
+    "note": "Measured with the pattern set shipped in v0.1.0, for comparison.",
+    "raw_findings": 3642,
+    "deduplicated": 3636,
+    "per_100_loc": 1.28,
+    "adjudicated_sample": 25,
+    "true_positives_in_sample": 0,
+    "precision_upper_bound_95": 0.12
+  }
+}

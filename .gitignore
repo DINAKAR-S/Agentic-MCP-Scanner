@@ -205,3 +205,14 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Benchmark checkouts are fetched on demand, never committed.
+mcp-scan/benchmark/corpus/
+mcp-scan/benchmark/*.json
+!mcp-scan/benchmark/corpus.json
+
+# Scan output
+*_security_report.md
+!sample_security_report.md
+external_vulnerabilities.md
+scan.json

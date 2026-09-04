@@ -1,54 +1,73 @@
+"""External threat intelligence.
+
+Fetches public advisories to give findings real-world context. Optional: a scan is
+complete without it.
+
+One behavioural fix from the previous version: a failed crawl used to be appended
+to the results list as though it were a vulnerability, so network errors reached the
+reporting stage disguised as findings. Failures are now logged and dropped.
+"""
+
+from __future__ import annotations
+
+import logging
 import os
-from agno.agent import Agent
-from agno.models.openai import OpenAIChat
-from agno.tools.duckduckgo import DuckDuckGoTools
-from agno.utils.log import logger
-from firecrawl import FirecrawlApp
+from typing import Dict, List, Optional
 
-class FirecrawlIntegrationAgent(Agent):
-    def __init__(self):
-        super().__init__(
-            name="Vulnerability Researcher",
-            role="Search for recent security vulnerabilities",
-            model=OpenAIChat(id="gpt-4o-mini"),
-            tools=[DuckDuckGoTools()],
-            instructions=[
-                "Use Firecrawl API to search for security advisories",
-                "Identify relevant CVEs and exploit patterns",
-                "Cross-reference findings with code analysis"
-            ]
-        )
+from .config import intel_sources
 
-    def firecrawl_search_and_crawl(self, vuln_urls):
-        api_key = os.environ.get("FIRECRAWL_API_KEY")
-        if not api_key:
-            logger.error("FIRECRAWL_API_KEY environment variable is not set. Skipping Firecrawl integration.")
+log = logging.getLogger("mcpvuln.intel")
+
+
+class ThreatIntelClient:
+    def __init__(self, api_key: Optional[str] = None, sources: Optional[List[str]] = None,
+                 max_sources: int = 10):
+        self.api_key = api_key or os.environ.get("FIRECRAWL_API_KEY")
+        self.sources = (sources if sources is not None else intel_sources())[:max_sources]
+
+    def available(self) -> bool:
+        return bool(self.api_key)
+
+    def fetch(self) -> List[Dict[str, str]]:
+        if not self.available():
+            log.info("FIRECRAWL_API_KEY not set, skipping threat intelligence")
             return []
-        app = FirecrawlApp(api_key=api_key)
-        results = []
 
-        # Search for recent vulnerabilities
-        search_result = app.search("AI MCP LLM vulnerability", limit=10)
-        for r in search_result.data:
-            results.append({
-                "name": r.get("title", "Unknown"),
-                "description": (r.get("description") or "")[:200],
-                "source_url": r.get("url")
-            })
+        from firecrawl import FirecrawlApp                # lazy import
 
-        # Crawl specific URLs
-        for url in vuln_urls:
+        app = FirecrawlApp(api_key=self.api_key)
+        results: List[Dict[str, str]] = []
+        failures = 0
+
+        try:
+            search = app.search("MCP Model Context Protocol vulnerability", limit=10)
+            for r in getattr(search, "data", []) or []:
+                results.append({
+                    "name": r.get("title") or "Untitled",
+                    "description": (r.get("description") or "")[:300],
+                    "source_url": r.get("url") or "",
+                })
+        except Exception as exc:
+            failures += 1
+            log.warning("threat-intel search failed: %s", exc)
+
+        for url in self.sources:
             try:
-                crawl_result = app.scrape_url(url, formats=['markdown', 'html'])
+                page = app.scrape_url(url, formats=["markdown"])
                 results.append({
-                    "name": getattr(crawl_result, "title", url),
-                    "description": getattr(crawl_result, "description", ""),
-                    "source_url": url
+                    "name": getattr(page, "title", None) or url,
+                    "description": (getattr(page, "description", "") or "")[:300],
+                    "source_url": url,
                 })
-            except Exception as e:
-                results.append({
-                    "name": f"Error crawling {url}",
-                    "description": f"Failed to crawl {url}: {str(e)}",
-                    "source_url": url
-                })
-        return results 
+            except Exception as exc:
+                # Dropped, not appended. A crawl failure is not a vulnerability.
+                failures += 1
+                log.warning("could not crawl %s: %s", url, exc)
+
+        if failures:
+            log.info("threat intelligence: %d sources retrieved, %d failed",
+                     len(results), failures)
+        return results
+
+
+FirecrawlIntegrationAgent = ThreatIntelClient

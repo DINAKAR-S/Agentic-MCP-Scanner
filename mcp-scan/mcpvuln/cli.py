@@ -1,90 +1,152 @@
+"""Command line interface.
+
+    mcpvuln ./path/to/repo                 # offline scan, no API key needed
+    mcpvuln https://github.com/org/repo    # ingest from GitHub
+    mcpvuln ./repo --narrative             # add model-written analysis
+    mcpvuln ./repo --json out.json         # emit the scan contract
+    mcpvuln ./repo --min-confidence 0.7    # tighten the detection threshold
+"""
+
+from __future__ import annotations
+
+import argparse
+import logging
 import os
 import sys
-import logging
-from mcpvuln.team import SecurityAnalysisTeam
-from dotenv import load_dotenv
-from colorama import init, Fore, Style
-from time import sleep
-from tqdm import tqdm
+from typing import List, Optional
 
-def animated_welcome():
-    init(autoreset=True)
-    banner = [
-        f"{Fore.CYAN}{Style.BRIGHT}███╗   ███╗ ██████╗ ██████╗ ██╗   ██╗██╗   ██╗██╗     ███╗   ██╗",
-        f"{Fore.CYAN}{Style.BRIGHT}████╗ ████║██╔═══██╗██╔══██╗██║   ██║██║   ██║██║     ████╗  ██║",
-        f"{Fore.CYAN}{Style.BRIGHT}██╔████╔██║██║   ██║██████╔╝██║   ██║██║   ██║██║     ██╔██╗ ██║",
-        f"{Fore.CYAN}{Style.BRIGHT}██║╚██╔╝██║██║   ██║██╔══██╗██║   ██║██║   ██║██║     ██║╚██╗██║",
-        f"{Fore.CYAN}{Style.BRIGHT}██║ ╚═╝ ██║╚██████╔╝██║  ██║╚██████╔╝╚██████╔╝███████╗██║ ╚████║",
-        f"{Fore.CYAN}{Style.BRIGHT}╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚═╝  ╚═══╝",
-        f"{Fore.YELLOW}MCP Vulnerability Analysis & Monitoring Pipeline\n"
-    ]
-    for line in banner:
-        print(line)
-        sleep(0.1)
-    for _ in tqdm(range(30), desc=f"{Fore.GREEN}Initializing", ncols=70, bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt}'):
-        sleep(0.02)
-    print(f"{Fore.MAGENTA}{Style.BRIGHT}Ready to scan!\n")
+from . import __version__
+from . import contract as contract_mod
+from .patterns import PATTERNS, validate as validate_patterns
+from .pipeline import SecurityAnalysisPipeline
 
-def main():
-    load_dotenv()
-    animated_welcome()
-    missing_keys = []
-    if not os.environ.get("GOOGLE_API_KEY"):
-        missing_keys.append("GOOGLE_API_KEY")
-    if not os.environ.get("FIRECRAWL_API_KEY"):
-        print(f"{Fore.YELLOW}[INFO]{Style.RESET_ALL} FIRECRAWL_API_KEY not set. Firecrawl integration will be skipped.")
-    if missing_keys:
-        print(f"{Fore.RED}[ERROR]{Style.RESET_ALL} Missing required environment variables: {', '.join(missing_keys)}")
-        print(f"Please add them to a .env file in your project directory.")
-        print(f"Example .env file:\nGOOGLE_API_KEY=your_google_api_key\nFIRECRAWL_API_KEY=your_firecrawl_api_key")
-        exit(1)
 
-    logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
-    if len(sys.argv) < 2:
-        print(f"{Fore.YELLOW}Usage: mcpvuln <github_repo_url1> [<github_repo_url2> ...]{Style.RESET_ALL}")
-        print("Example: mcpvuln https://github.com/user/repo1 https://github.com/user/repo2")
-        exit(0)
-    github_urls = sys.argv[1:]
-    vuln_urls = [
-        "https://github.com/accuknox/agentic-ai-strands",
-        "https://aws.amazon.com/blogs/machine-learning/protect-sensitive-data-in-rag-applications-with-amazon-bedrock/",
-        "https://github.com/invariantlabs-ai/mcp-scan",
-        "https://blog.virustotal.com/2025/06/what-17845-github-repos-taught-us-about.html",
-        "https://unit42.paloaltonetworks.com/agentic-ai-threats/",
-        "https://invariantlabs.ai/blog/whatsapp-mcp-exploited",
-        "https://www.cyberark.com/resources/threat-research-blog/poison-everywhere-no-output-from-your-mcp-server-is-safe",
-        "https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks",
-        "https://www.tensorzero.com/blog/reverse-engineering-cursors-llm-client/",
-        "https://simonwillison.net/2025/Apr/9/mcp-prompt-injection/",
-        "https://gbhackers.com/threat-actors-manipulate-search-results/",
-        "https://blog.bsidesmumbai.in/posts/aipowered-attack/",
-        "https://github.com/Tomby68/mcp-vulnerabilities",
-        "https://vulnerablemcp.info/index.html",
-        "https://hiddenlayer.com/innovation-hub/exploiting-mcp-tool-parameters/",
-        "https://strobes.co/blog/mcp-model-context-protocol-and-its-critical-vulnerabilities/",
-        "https://gbhackers.com/anthropic-mcp-inspector-vulnerability/",
-        "https://cybersecuritynews.com/anthropic-mcp-inspector-vulnerability/",
-        "https://www.backslash.security/blog/hundreds-of-mcp-servers-vulnerable-to-abuse",
-        "https://www.redhat.com/en/blog/model-context-protocol-mcp-understanding-security-risks-and-controls",
-        "https://elenacross7.medium.com/%EF%B8%8F-the-s-in-mcp-stands-for-security-91407b33ed6b"
-    ]
-    security_team = SecurityAnalysisTeam()
-    result = security_team.run_analysis(github_urls, vuln_urls)
-    if isinstance(result["reports"], dict):
-        for repo_url, md_path in result["reports"].items():
-            print(f"\nMarkdown Report Generated for {repo_url}: {md_path}")
-    else:
-        print("\nMarkdown Report Generated:", result["reports"])
-    print("\nExternal Vulnerabilities Markdown Generated:", result["external_vuln_md"])
-    if isinstance(result["vulnerabilities"], dict):
-        print("\nVulnerabilities Found:", sum(len(v) for v in result["vulnerabilities"].values()))
-    else:
-        print("\nVulnerabilities Found: 0 (error in analysis)")
-    if isinstance(result["external_vulns"], list):
-        print("\nExternal Vulnerability Sources:", len(result["external_vulns"]))
-    else:
-        print("\nExternal Vulnerability Sources: 0 (error in analysis)")
-    print(f"\n{Fore.GREEN}[INFO]{Style.RESET_ALL} All outputs are ready for security, engineering, and business review. See the markdown files for details.")
+def build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(
+        prog="mcpvuln",
+        description="Vulnerability detection for Model Context Protocol codebases.",
+        epilog="Detection is deterministic and needs no API key. "
+               "--narrative and --threat-intel are the only network features.",
+    )
+    p.add_argument("target", nargs="*",
+                   help="Local directory or GitHub repository URL. Repeatable.")
+    p.add_argument("--out", "-o", default=".",
+                   help="Directory for generated reports (default: current directory).")
+    p.add_argument("--json", dest="json_path", default=None,
+                   help="Also write the scan contract as JSON to this path. "
+                        "With multiple targets it is used as a directory.")
+    p.add_argument("--min-confidence", type=float, default=None,
+                   help="Drop findings below this detector confidence (0.0-1.0).")
+    p.add_argument("--narrative", action="store_true",
+                   help="Add a model-written analyst narrative. Requires GOOGLE_API_KEY.")
+    p.add_argument("--threat-intel", action="store_true",
+                   help="Fetch external advisories. Requires FIRECRAWL_API_KEY.")
+    p.add_argument("--model", default="models/gemini-2.5-pro",
+                   help="Model for --narrative.")
+    p.add_argument("--fail-on", choices=["none", "low", "medium", "high", "critical"],
+                   default="none",
+                   help="Exit non-zero if any finding reaches this severity. For CI.")
+    p.add_argument("--quiet", "-q", action="store_true", help="Only print result paths.")
+    p.add_argument("--self-check", action="store_true",
+                   help="Validate the pattern set and exit.")
+    p.add_argument("--version", action="version", version=f"mcpvuln {__version__}")
+    return p
+
+
+_SEVERITY_RANK = {"none": 0, "low": 1, "medium": 2, "high": 3, "critical": 4}
+
+
+def _worst_severity(contract: dict) -> str:
+    worst = "none"
+    for f in contract.get("findings", []):
+        if f.get("informational"):
+            continue
+        s = str(f.get("cvss_severity", "None")).lower()
+        if _SEVERITY_RANK.get(s, 0) > _SEVERITY_RANK[worst]:
+            worst = s
+    return worst
+
+
+def _slug(label: str) -> str:
+    base = label.rstrip("/\\").replace("\\", "/").split("/")[-1]
+    return "".join(c if c.isalnum() or c in "-_." else "_" for c in base) or "scan"
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    args = build_parser().parse_args(argv)
+
+    logging.basicConfig(
+        level=logging.WARNING if args.quiet else logging.INFO,
+        format="[%(levelname)s] %(message)s",
+    )
+
+    if args.self_check:
+        problems = validate_patterns()
+        if problems:
+            print(f"Pattern set INVALID, {len(problems)} problem(s):")
+            for p in problems:
+                print(f"  - {p}")
+            return 1
+        print(f"Pattern set OK: {len(PATTERNS)} rules, all compile, no duplicate ids.")
+        return 0
+
+    if not args.target:
+        build_parser().print_help()
+        return 2
+
+    if args.narrative and not os.environ.get("GOOGLE_API_KEY"):
+        print("[warning] --narrative requested but GOOGLE_API_KEY is not set. "
+              "The deterministic report will still be written.", file=sys.stderr)
+    if args.threat_intel and not os.environ.get("FIRECRAWL_API_KEY"):
+        print("[warning] --threat-intel requested but FIRECRAWL_API_KEY is not set. "
+              "Continuing without it.", file=sys.stderr)
+
+    os.makedirs(args.out, exist_ok=True)
+    pipeline = SecurityAnalysisPipeline(
+        min_confidence=args.min_confidence,
+        narrative=args.narrative,
+        threat_intel=args.threat_intel,
+        model_name=args.model,
+    )
+
+    exit_code = 0
+    for target in args.target:
+        try:
+            contract = pipeline.run(target)
+        except Exception as exc:
+            print(f"[error] {target}: {exc}", file=sys.stderr)
+            exit_code = max(exit_code, 1)
+            continue
+
+        slug = _slug(contract["repository"])
+        md_path = os.path.join(args.out, f"{slug}_security_report.md")
+        with open(md_path, "w", encoding="utf-8") as fh:
+            fh.write(pipeline.report(contract))
+
+        if args.json_path:
+            jp = (os.path.join(args.json_path, f"{slug}.json")
+                  if len(args.target) > 1 or os.path.isdir(args.json_path)
+                  else args.json_path)
+            os.makedirs(os.path.dirname(os.path.abspath(jp)), exist_ok=True)
+            contract_mod.save(contract, jp)
+            print(f"contract: {jp}")
+
+        scan = contract["scan"]
+        print(f"report:   {md_path}")
+        if not args.quiet:
+            print(f"          {scan['findings_reportable']} reportable, "
+                  f"{scan['findings_informational']} informational, "
+                  f"across {scan['files_scanned']} files "
+                  f"({scan['lines_scanned']:,} lines)")
+
+        if args.fail_on != "none":
+            worst = _worst_severity(contract)
+            if _SEVERITY_RANK[worst] >= _SEVERITY_RANK[args.fail_on]:
+                print(f"[fail-on] worst severity {worst} >= {args.fail_on}", file=sys.stderr)
+                exit_code = max(exit_code, 3)
+
+    return exit_code
+
 
 if __name__ == "__main__":
-    main() 
+    raise SystemExit(main())
