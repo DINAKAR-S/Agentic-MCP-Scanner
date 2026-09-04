@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: mcp-scan
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.9", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip install -e .
+      - name: Pattern self-check
+        run: mcpvuln --self-check
+      - name: Tests
+        run: pytest tests/ -q
+      - name: Scan without any API key
+        # The detection path must never require a credential. This step
+        # deliberately runs with no GOOGLE_API_KEY, FIRECRAWL_API_KEY or
+        # OPENAI_API_KEY in the environment.
+        run: mcpvuln mcpvuln --out "${{ runner.temp }}/scan" --json "${{ runner.temp }}/scan.json" -q
+      - name: Scan itself and fail on critical
+        run: mcpvuln mcpvuln --out "${{ runner.temp }}/self" --fail-on critical -q
+
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+      - name: Fetch pinned benign corpus
+        run: python benchmark/run_benchmark.py --fetch --json "$RUNNER_TEMP/bench.json"
+      - name: Enforce the false-positive budget
+        run: python benchmark/check_budget.py "$RUNNER_TEMP/bench.json"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: ${{ runner.temp }}/bench.json
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ruff==0.13.0
+      - run: ruff check mcpvuln benchmark tests
