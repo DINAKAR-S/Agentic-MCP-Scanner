@@ -216,3 +216,8 @@ mcp-scan/benchmark/*.json
 !sample_security_report.md
 external_vulnerabilities.md
 scan.json
+
+# Build artifacts
+mcp-scan/dist/
+mcp-scan/build/
+mcp-scan/*.egg-info/

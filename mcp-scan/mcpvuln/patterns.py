@@ -197,7 +197,14 @@ PATTERNS: List[Pattern] = [
     Pattern(
         id="mcp.jwt.weak_secret",
         category="identity_trust_forgery", layer=LAYER_MCP,
-        regex=r"(?:algorithm|alg)\s*[:=]\s*[\"']HS256[\"'][\s\S]{0,120}?(?:secret|key)\s*[:=]\s*[\"'][A-Za-z0-9_\-]{1,24}[\"']",
+        regex=(
+            # the algorithm and the short secret may appear in either order
+            r"(?:algorithm|alg)\s*[:=]\s*[\"']HS(?:256|384|512)[\"']"
+            r"[\s\S]{0,160}?(?:secret|key)\s*[:=]\s*[\"'][A-Za-z0-9_\-]{1,24}[\"']"
+            r"|"
+            r"(?:jwt_?secret|signing_?key)\s*[:=]\s*[\"'][A-Za-z0-9_\-]{1,24}[\"']"
+            r"[\s\S]{0,160}?(?:algorithm|alg)\s*[:=]\s*[\"']HS(?:256|384|512)[\"']"
+        ),
         description="HS256 signing with a short, likely hardcoded secret.",
         confidence=0.80, ignorecase=True,
         cvss=_cvss(ac="H", vc="H", vi="H"),
@@ -209,7 +216,7 @@ PATTERNS: List[Pattern] = [
         category="identity_trust_forgery", layer=LAYER_MCP,
         regex=r"\bis_verified\s*[:=]\s*True\b|[\"']is_verified[\"']\s*:\s*(?:True|true)",
         description="Verification flag set without an issuer check.",
-        confidence=0.65,
+        confidence=0.65, allow_in_string=True,   # is_verified is usually a dict key
         cvss=_cvss(vc="H", vi="H", sc="H", si="H"),
         remediation="Set is_verified only after validating a signature chain to a trust authority.",
     ),

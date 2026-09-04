@@ -2,6 +2,8 @@
 
 Vulnerability detection for Model Context Protocol codebases, with a benign control corpus so you can tell how much of the output is noise.
 
+**What this is for.** MCP lets an AI agent discover and call tools at runtime, across servers somebody else operates. That moves the unit of trust from a single function call to a whole protocol session, and the vulnerabilities that follow, forged agent identities, unenforced trust scores, rewritable audit logs, one tenant's context served to another, have no equivalent in ordinary application security. Existing scanners either do not look at that layer or, when they do, report so much noise that nobody reads the output. This project is an attempt to detect those vulnerabilities **and** to prove how much of what it reports is real, by measuring itself against code that has nothing wrong with it.
+
 ---
 
 ## The situation
@@ -29,6 +31,27 @@ That is not a hypothetical. It is what version 0.1.0 of **this tool** did, measu
 | CVSS score for the same finding | Differs between runs, a model wrote it | Computed from the FIRST spec, identical every run |
 
 **Result of fixing that:** on 285,463 lines of clean, officially maintained MCP code, findings went from **3,642 to 23**, a 160x reduction, with **one** above the reporting confidence threshold, and that one is a genuine bug in the SDK.
+
+
+---
+
+## Try it in thirty seconds
+
+The repository ships the **same MCP server twice**: `demo/vulnerable/` and `demo/safe/`.
+Same files, same functions, same names. Every vulnerability in the first is fixed in the
+second.
+
+```bash
+pip install -e "mcp-scan[all]"
+mcpvuln demo/vulnerable      # 20 findings, 12 categories, all four layers
+mcpvuln demo/safe            # 0 findings
+```
+
+No API key. No network. Under a second.
+
+The second command is the one that matters. Any scanner finds planted bugs; a scanner
+that also fires on the fixed version is not measuring anything. See
+[demo/README.md](demo/README.md) for what is planted and how each issue was fixed.
 
 ---
 

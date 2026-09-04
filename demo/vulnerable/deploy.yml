@@ -1,0 +1,10 @@
+# DELIBERATELY VULNERABLE. Container configuration.
+# A privileged container that mounts the Docker socket can reach the host, and
+# therefore everything else running on it.
+services:
+  agent-runtime:
+    image: example/agent-runtime:latest
+    privileged: true
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/:/host"

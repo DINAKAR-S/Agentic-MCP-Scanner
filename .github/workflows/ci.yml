@@ -39,6 +39,12 @@ jobs:
         run: mcpvuln mcpvuln --out "${{ runner.temp }}/scan" --json "${{ runner.temp }}/scan.json" -q
       - name: Scan itself and fail on critical
         run: mcpvuln mcpvuln --out "${{ runner.temp }}/self" --fail-on critical -q
+      - name: Demo, vulnerable half must be detected
+        # The README promises this exits non-zero. Keep the promise true.
+        run: |
+          mcpvuln ../demo/vulnerable --out "${{ runner.temp }}/dv" --fail-on critical -q && exit 1 || true
+      - name: Demo, fixed half must be silent
+        run: mcpvuln ../demo/safe --out "${{ runner.temp }}/ds" --fail-on low -q
 
   benchmark:
     runs-on: ubuntu-latest
