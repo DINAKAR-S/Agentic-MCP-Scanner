@@ -263,3 +263,19 @@ def test_database_query_is_not_an_unscoped_memory_search():
     """db.query and pool.query are relational calls, not vector-store searches."""
     for src in ('db.query("SELECT 1")\n', 'pool.query("SELECT 1")\n'):
         assert "cross_agent_memory" not in cats(scan(src, path="api.js"))
+
+
+def test_typescript_declaration_files_are_skipped():
+    """A .d.ts declares types only. URLPattern.exec() in a generated declaration
+    is not code execution, and scanning them produced 19 spurious findings across
+    ten real MCP servers."""
+    src = ("declare class URLPattern {\n"
+           "  exec(input?: (string | URLPatternInit), baseURL?: string): "
+           "URLPatternResult | null;\n}\n")
+    assert VulnerabilityAnalyzer().analyze(src, "worker-configuration.d.ts") == []
+
+
+def test_regular_typescript_is_still_scanned():
+    f = scan('const rows = db.query("SELECT * FROM t WHERE x = \'" + v + "\'");\n',
+             path="worker.ts")
+    assert "sql_injection" in cats(f)

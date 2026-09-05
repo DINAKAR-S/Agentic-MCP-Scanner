@@ -38,6 +38,12 @@ CONFIG_EXT = {".json", ".yaml", ".yml", ".toml", ".ini", ".env", ".cfg"}
 PROSE_EXT = {".md", ".rst", ".txt", ".adoc"}
 SCANNABLE = CODE_EXT | CONFIG_EXT | PROSE_EXT
 
+# TypeScript declaration files carry types only. They declare signatures such as
+# URLPattern.exec() and contain no executable statements, so nothing in them can be
+# a vulnerability. Scanning them produced 19 of 60 findings across ten real MCP
+# servers, every one of them spurious.
+DECLARATION_SUFFIXES = (".d.ts", ".d.mts", ".d.cts")
+
 SKIP_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", "dist",
              "build", ".mypy_cache", ".pytest_cache", ".tox", "vendor",
              "site-packages", ".next", "target"}
@@ -50,8 +56,12 @@ DOC_DIR_RE = re.compile(
     r"(?:[\\/]|$)"
     r"|(?:^|[\\/])tutorial\w*\.[a-z]+$",
     re.IGNORECASE)
-TEST_PATH_RE = re.compile(r"(?:^|[\\/])(?:tests?|__tests__|spec|fixtures?)(?:[\\/]|$)|"
-                          r"(?:^|[\\/])(?:test_[^\\/]*|[^\\/]*_test)\.[a-z]+$", re.IGNORECASE)
+TEST_PATH_RE = re.compile(
+    r"(?:^|[\\\\/])(?:tests?|__tests__|spec|fixtures?|stories|storybook)(?:[\\\\/]|$)"
+    r"|(?:^|[\\\\/])(?:test_[^\\\\/]*|[^\\\\/]*_test)\.[a-z]+$"
+    # colocated suffix files: Button.test.tsx, Button.stories.tsx, api.spec.ts
+    r"|\.(?:test|spec|stories|story|mock|fixture)\.[a-z]+$",
+    re.IGNORECASE)
 
 # Context multipliers applied to a pattern's prior confidence.
 W_DOC_PATH = 0.25
@@ -217,6 +227,9 @@ class VulnerabilityAnalyzer:
 
     def analyze(self, code_content: str, file_path: str) -> List[Finding]:
         if not code_content:
+            return []
+
+        if file_path.replace("\\", "/").lower().endswith(DECLARATION_SUFFIXES):
             return []
 
         file_suppressed, per_line = _suppressions(code_content)

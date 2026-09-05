@@ -133,7 +133,21 @@ PATTERNS: List[Pattern] = [
         id="web.hardcoded_secret.assignment",
         category="hardcoded_secrets", layer=LAYER_WEB,
         # Require a value that looks like a real secret, not a placeholder.
-        regex=r"(?:password|passwd|api_key|apikey|secret|token|private_key)\s*[:=]\s*[\"'](?![\"']|\s|<|\{|\$|your[-_ ]|xxx+|placeholder|example|changeme|redacted|test|dummy|fake|sample|foo|bar|\*+)[A-Za-z0-9_\-+/=.]{16,}[\"']",
+        regex=(
+            r"(?:password|passwd|api_key|apikey|secret|token|private_key)"
+            r"\s*[:=]\s*[\"']"
+            # not a placeholder, not a field name, not an environment variable name
+            r"(?![\"']|\s|<|\{|\$|your[-_ ]|xxx+|placeholder|example|changeme"
+            r"|redacted|test|dummy|fake|sample|foo|bar|opaque[-_]|super[-_]secret"
+            # (?-i:) because this rule is case-insensitive overall; without it
+            # this clause would match any alphanumeric value and reject every
+            # real credential.
+            r"|header\.payload|(?-i:[A-Z][A-Z0-9_]{5,})[\"']"
+            r"|(?:oauth|idp|client|api|auth|mcp)[-_](?:client[-_])?"
+            r"(?:secret|token|key|id)[\"']"
+            r"|\*+)"
+            r"[A-Za-z0-9_\-+/=.]{16,}[\"']"
+        ),
         description="Credential-shaped literal assigned in source.",
         confidence=0.75, ignorecase=True,
         cvss=_cvss(vc="H", vi="H"),
@@ -179,7 +193,20 @@ PATTERNS: List[Pattern] = [
     Pattern(
         id="web.dynamic_exec",
         category="dynamic_code_execution", layer=LAYER_WEB,
-        regex=r"\b(?:eval|exec)\s*\(\s*(?!['\"]\s*\))(?=[^)]*(?:\+|input|request|body|payload|param|arg|user|f[\"']))",
+        regex=(
+            # eval/exec reached by non-literal input. Deliberately NOT a bare
+            # `exec(`: in JavaScript that is RegExp.prototype.exec, and generated
+            # TypeScript .d.ts files declare URLPattern.exec, neither of which
+            # executes anything. Require a Python builtin call or an explicit
+            # child_process / Function constructor.
+            r"(?:^|[^.\w])(?:eval|exec)\s*\(\s*"
+            r"(?![\"']\s*\))"
+            r"(?=[^)]*(?:\+|input|request|body|payload|param|arg|user|f[\"']))"
+            r"|"
+            r"\bchild_process\.(?:exec|execSync)\s*\("
+            r"|"
+            r"\bnew\s+Function\s*\("
+        ),
         description="eval/exec reached by non-literal input.",
         confidence=0.80,
         cvss=_cvss(vc="H", vi="H", va="H", sc="H", si="H", sa="H"),
