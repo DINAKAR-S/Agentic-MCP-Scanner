@@ -63,7 +63,10 @@ Same files, same functions, same names. Every vulnerability in the first is fixe
 second.
 
 ```bash
-pip install -e "mcp-scan[all]"
+git clone https://github.com/DINAKAR-S/Agentic-MCP-Scanner
+cd Agentic-MCP-Scanner
+pip install -e mcp-scan
+
 mcpvuln demo/vulnerable      # 20 findings, 12 categories, all four layers
 mcpvuln demo/safe            # 0 findings
 ```
@@ -79,17 +82,47 @@ that also fires on the fixed version is not measuring anything. See
 ## Install
 
 ```bash
+pip install mcpvuln
+```
+
+> **Not on PyPI yet.** Until it is, use the release wheel or a source checkout below.
+> _(Delete this note once `twine upload` has run.)_
+
+Core install pulls a single dependency and needs no credentials. Everything else is an
+extra:
+
+```bash
+pip install "mcpvuln[github]"      # scan a GitHub URL directly
+pip install "mcpvuln[narrative]"   # model-written analyst commentary
+pip install "mcpvuln[intel]"       # external advisory lookup
+pip install "mcpvuln[all]"         # all of the above
+```
+
+<details>
+<summary>Other ways to install</summary>
+
+**From a GitHub release**, without PyPI:
+
+```bash
+pip install https://github.com/DINAKAR-S/Agentic-MCP-Scanner/releases/download/v0.2.0/mcpvuln-0.2.0-py3-none-any.whl
+```
+
+**From source**, which is what you want if you intend to run the benchmark or the demo:
+
+```bash
+git clone https://github.com/DINAKAR-S/Agentic-MCP-Scanner
+cd Agentic-MCP-Scanner
 pip install -e "mcp-scan[all]"
 ```
 
-Core install needs one dependency (`cvss`). Everything else is an extra:
+**Verify the install:**
 
 ```bash
-pip install -e mcp-scan                  # detection, scoring, reports. no network.
-pip install -e "mcp-scan[github]"        # scan a GitHub URL directly
-pip install -e "mcp-scan[narrative]"     # model-written analyst commentary
-pip install -e "mcp-scan[intel]"         # external advisory lookup
+mcpvuln --version
+mcpvuln --self-check      # validates the rule set: 29 rules, no duplicate ids
 ```
+
+</details>
 
 ## Use
 
