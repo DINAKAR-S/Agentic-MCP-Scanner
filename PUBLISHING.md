@@ -18,8 +18,22 @@ CI enforces all of this, so a green build on `main` is the same check.
 
 ## PyPI
 
-The package name `mcpvuln` is registered to this project. A version number can never be
-reused on PyPI, so treat an upload as final.
+The package name `mcpvuln` is registered to this project and 0.2.0 is published. A
+version number can never be reused on PyPI, so treat an upload as final.
+
+The token lives in keywarden as `pypi/prod`, so the value never has to be handled
+directly:
+
+```bash
+keywarden grant pypi/prod --exec python --ttl 15m
+keywarden run --inject pypi/prod -- python benchmark/_publish.py --check dist/*
+keywarden run --inject pypi/prod -- python benchmark/_publish.py dist/*
+```
+
+`benchmark/_publish.py` bridges keywarden's `API_TOKEN` to twine's `TWINE_PASSWORD`
+inside the child process, and `--check` validates the token shape and the artifact list
+without uploading. Run the check first: it catches a token pasted without its `pypi-`
+prefix, which is otherwise a wasted authentication attempt.
 
 ```bash
 cd mcp-scan
@@ -47,12 +61,8 @@ Get a token at <https://pypi.org/manage/account/token/>. Scope it to this projec
 the project exists; the first upload needs an account-wide token. Store it in
 `~/.pypirc` or as `TWINE_PASSWORD`, and never commit it.
 
-After the first successful upload:
-
-1. Delete the "Not on PyPI yet" note from the README Install section.
-2. Add the downloads badge to the README:
-   `[![PyPI](https://img.shields.io/pypi/v/mcpvuln)](https://pypi.org/project/mcpvuln/)`
-   `[![Downloads](https://img.shields.io/pypi/dm/mcpvuln)](https://pypi.org/project/mcpvuln/)`
+Both post-upload README edits are done: the "not on PyPI yet" note is removed and the
+version and downloads badges are in place.
 
 ## GitHub release
 

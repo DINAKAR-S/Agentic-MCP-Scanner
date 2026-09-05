@@ -1,5 +1,7 @@
 # mcpvuln
 
+[![PyPI](https://img.shields.io/pypi/v/mcpvuln)](https://pypi.org/project/mcpvuln/)
+[![Downloads](https://img.shields.io/pypi/dm/mcpvuln)](https://pypi.org/project/mcpvuln/)
 [![CI](https://github.com/DINAKAR-S/Agentic-MCP-Scanner/actions/workflows/ci.yml/badge.svg)](https://github.com/DINAKAR-S/Agentic-MCP-Scanner/actions/workflows/ci.yml)
 [![Tests](https://img.shields.io/badge/tests-140%20passing-brightgreen)](mcp-scan/tests)
 [![False positives](https://img.shields.io/badge/false%20positives-0.008%20per%20100%20LOC-brightgreen)](mcp-scan/benchmark)
@@ -63,12 +65,11 @@ Same files, same functions, same names. Every vulnerability in the first is fixe
 second.
 
 ```bash
-git clone https://github.com/DINAKAR-S/Agentic-MCP-Scanner
-cd Agentic-MCP-Scanner
-pip install -e mcp-scan
+pip install mcpvuln
 
-mcpvuln demo/vulnerable      # 20 findings, 12 categories, all four layers
-mcpvuln demo/safe            # 0 findings
+git clone https://github.com/DINAKAR-S/Agentic-MCP-Scanner
+mcpvuln Agentic-MCP-Scanner/demo/vulnerable   # 20 findings, 12 categories, all four layers
+mcpvuln Agentic-MCP-Scanner/demo/safe         # 0 findings
 ```
 
 No API key. No network. Under a second.
@@ -84,9 +85,6 @@ that also fires on the fixed version is not measuring anything. See
 ```bash
 pip install mcpvuln
 ```
-
-> **Not on PyPI yet.** Until it is, use the release wheel or a source checkout below.
-> _(Delete this note once `twine upload` has run.)_
 
 Core install pulls a single dependency and needs no credentials. Everything else is an
 extra:
