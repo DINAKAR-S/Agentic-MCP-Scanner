@@ -45,6 +45,17 @@ jobs:
           mcpvuln ../demo/vulnerable --out "${{ runner.temp }}/dv" --fail-on critical -q && exit 1 || true
       - name: Demo, fixed half must be silent
         run: mcpvuln ../demo/safe --out "${{ runner.temp }}/ds" --fail-on low -q
+      - name: 2026 CVE corpus, vulnerable half must be detected
+        run: |
+          mcpvuln ../demo/vulnerable-2026 --out "${{ runner.temp }}/dv26" --fail-on high -q && exit 1 || true
+      - name: 2026 CVE corpus, fixed half must be silent
+        run: mcpvuln ../demo/safe-2026 --out "${{ runner.temp }}/ds26" --fail-on low -q
+      - name: Score both corpora
+        # The paper corpus is frozen and must keep scoring exactly as published;
+        # the 2026 corpus is the CVE-shaped set added afterwards.
+        run: |
+          python benchmark/score_demo.py --corpus paper --json "${{ runner.temp }}/paper.json"
+          python benchmark/score_demo.py --corpus 2026 --json "${{ runner.temp }}/cve2026.json"
 
   benchmark:
     runs-on: ubuntu-latest

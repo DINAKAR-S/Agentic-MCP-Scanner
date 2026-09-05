@@ -75,6 +75,29 @@ _IMPACT: Dict[str, str] = {
     "prompt_injection":
         "untrusted text is placed where the model reads instructions, so an "
         "attacker can redirect what the agent does",
+    "line_jumping":
+        "a tool's description contains instructions, and the model reads those "
+        "descriptions when it connects, so they take effect before anyone calls "
+        "the tool",
+    "tool_shadowing":
+        "one tool's description gives orders about a different tool, so a server "
+        "you do not trust can change what a server you do trust appears to do",
+    "hidden_instruction":
+        "text is hidden in characters a person cannot see on screen but a model "
+        "still reads",
+    "ssrf":
+        "the server fetches whatever address it is given, so an attacker can make "
+        "it reach internal services and cloud metadata endpoints that carry "
+        "credentials",
+    "dns_rebinding":
+        "a web page open in the user's browser can talk to this local server and "
+        "call its tools as if it were the user",
+    "network_exposure":
+        "the server listens on every network interface, so anyone who can reach "
+        "the machine can reach its tools",
+    "argument_injection":
+        "a value passed to a command-line program can be read as an option rather "
+        "than as data, which for tools such as git can run code",
     "indirect_prompt_injection":
         "content fetched from elsewhere is treated as instructions, so an attacker "
         "who controls that content controls the agent",

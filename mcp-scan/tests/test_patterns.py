@@ -29,7 +29,10 @@ def test_shell_pipes_are_escaped():
     That single typo produced 2,061 of 3,642 findings on clean official MCP code.
     """
     for p in PATTERNS:
-        if re.search(r"\b(?:curl|wget)\b", p.regex):
+        # Only a pipeline *into a shell* is at risk; a rule that merely lists
+        # curl or wget among program names is not.
+        if (re.search(r"\b(?:curl|wget)\b", p.regex)
+                and re.search(r"\b(?:sh|bash|zsh)\b", p.regex)):
             assert r"\|" in p.regex, (
                 f"{p.id}: shell pipeline pattern must escape '|'; "
                 f"unescaped it is regex alternation"

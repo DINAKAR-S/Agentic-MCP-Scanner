@@ -45,9 +45,13 @@ No API key. No network. Under a second.
 | Version | Findings | Per 100 LOC |
 |---|---|---|
 | 0.1.0 | 3,642 | 1.28 |
-| **0.2.0** | **23** | **0.008** |
+| 0.2.0 | 23 | 0.008 |
+| **0.3.0** | **38** | **0.013** |
 
-A 160-fold reduction. CI fails the build if that rate rises above 0.05.
+A 96-fold reduction from 0.1.0, with fourteen more rules than 0.2.0. CI fails the build
+if that rate rises above 0.05. The 2025-2026 CVE classes are scored on a second public
+corpus, `demo/vulnerable-2026` (16 instances, 16 detected, 0 false positives on the fixed
+half), kept separate so the 22-instance paper corpus above stays frozen.
 
 ## Usage
 
@@ -73,7 +77,12 @@ pip install "mcpvuln[all]"         # all of the above
 
 ## What it detects
 
-29 rules across four layers, each carrying a confidence prior and CVSS v4.0 base metrics.
+44 rules across four layers, each carrying a confidence prior and CVSS v4.0 base metrics.
+Fourteen of them mirror MCP vulnerabilities published as CVEs in 2025 and 2026 (SSRF from
+a tool's URL argument, argument injection into `git`, DNS-rebinding protection disabled,
+all-interface binds, shared HTTP transports, line jumping, tool shadowing, invisible
+Unicode); the mapping is in
+[docs/cve-coverage.md](https://github.com/DINAKAR-S/Agentic-MCP-Scanner/blob/main/docs/cve-coverage.md).
 
 | Layer | Covers |
 |---|---|

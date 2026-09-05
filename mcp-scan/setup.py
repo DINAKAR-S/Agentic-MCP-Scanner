@@ -48,7 +48,7 @@ EXTRAS["all"] = sorted({d for k, v in EXTRAS.items() if k != "dev" for d in v})
 
 setup(
     name="mcpvuln",
-    version="0.2.1",
+    version="0.3.0",
     author="Dinakar S",
     author_email="dinakars2003@gmail.com",
     description=_DESCRIPTION,

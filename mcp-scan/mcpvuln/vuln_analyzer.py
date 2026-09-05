@@ -224,10 +224,21 @@ class VulnerabilityAnalyzer:
         self.patterns = list(patterns if patterns is not None else PATTERNS)
         self.min_confidence = min_confidence
         self._compiled = [(p, p.compiled()) for p in self.patterns]
+        # File-level gates. ``requires`` must match somewhere in the file for the
+        # rule to run at all; ``absent`` must match nowhere. They let a rule say
+        # "only in code that defines MCP tools" or "only if the file never
+        # canonicalises a path", which a single-site regex cannot express.
+        self._gates = [(re.compile(p.requires) if p.requires else None,
+                        re.compile(p.absent) if p.absent else None)
+                       for p in self.patterns]
 
     def analyze(self, code_content: str, file_path: str) -> List[Finding]:
         if not code_content:
             return []
+        # A leading BOM is an encoding artefact (Visual Studio writes one by
+        # default), not hidden content. Strip it so the invisible-Unicode rule
+        # cannot fire on it.
+        code_content = code_content.lstrip("﻿")
 
         if file_path.replace("\\", "/").lower().endswith(DECLARATION_SUFFIXES):
             return []
@@ -250,7 +261,11 @@ class VulnerabilityAnalyzer:
         base_weight = context_weight(file_path)
         found: Dict[Tuple[str, str, int], Finding] = {}
 
-        for pattern, rx in self._compiled:
+        for (pattern, rx), (req, absent) in zip(self._compiled, self._gates):
+            if req is not None and not req.search(code_content):
+                continue
+            if absent is not None and absent.search(code_content):
+                continue
             for m in rx.finditer(code_content):
                 start = m.start()
                 in_comment = _in_span(start, comment_spans)

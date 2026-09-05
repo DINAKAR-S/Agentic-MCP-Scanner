@@ -35,8 +35,17 @@ DEMO = os.path.join(ROOT, "demo")
 TOLERANCE = 2
 
 
-def load_ground_truth():
-    with open(os.path.join(DEMO, "ground-truth.json"), encoding="utf-8") as fh:
+# Two corpora. "paper" is the 22-instance set the manuscript reports on and is
+# frozen; "2026" holds the CVE-shaped classes added afterwards and is scored
+# separately so the published figures stay reproducible.
+CORPORA = {
+    "paper": ("ground-truth.json", "vulnerable", "safe"),
+    "2026": ("ground-truth-2026.json", "vulnerable-2026", "safe-2026"),
+}
+
+
+def load_ground_truth(corpus="paper"):
+    with open(os.path.join(DEMO, CORPORA[corpus][0]), encoding="utf-8") as fh:
         return json.load(fh)["instances"]
 
 
@@ -83,13 +92,16 @@ def main() -> int:
     ap.add_argument("--json", dest="json_path", help="write results as JSON")
     ap.add_argument("--all", action="store_true",
                     help="include informational findings, not just reportable ones")
+    ap.add_argument("--corpus", choices=sorted(CORPORA), default="paper",
+                    help="which fixture set to score (default: the paper corpus)")
     args = ap.parse_args()
 
-    gts = load_ground_truth()
+    gt_file, vuln_dir, safe_dir = CORPORA[args.corpus]
+    gts = load_ground_truth(args.corpus)
     analyzer = VulnerabilityAnalyzer()
 
-    vuln = analyzer.analyze_path(os.path.join(DEMO, "vulnerable"))
-    safe = analyzer.analyze_path(os.path.join(DEMO, "safe"))
+    vuln = analyzer.analyze_path(os.path.join(DEMO, vuln_dir))
+    safe = analyzer.analyze_path(os.path.join(DEMO, safe_dir))
     if not args.all:
         vuln = [f for f in vuln if not f.informational]
         safe = [f for f in safe if not f.informational]
@@ -122,9 +134,10 @@ def main() -> int:
     print("=" * 68)
     print("DEMO BENCHMARK: precision, recall and F1 against a public ground truth")
     print("=" * 68)
+    print(f"corpus                 : {args.corpus} ({gt_file})")
     print(f"ground-truth instances : {len(gts)}")
-    print(f"units reported on demo/vulnerable : {len(vuln_u)}")
-    print(f"units reported on demo/safe       : {len(safe_u)}   (every one is a false positive)")
+    print(f"units reported on demo/{vuln_dir:16s}: {len(vuln_u)}")
+    print(f"units reported on demo/{safe_dir:16s}: {len(safe_u)}   (every one is a false positive)")
     print()
     print(f"  TP {tp:3d}    FP {fp:3d}    FN {fn:3d}")
     print(f"  Precision {p:.3f}    Recall {r:.3f}    F1 {f1:.3f}")

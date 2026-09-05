@@ -6,7 +6,7 @@ their own. The reporting and threat-intelligence stages pull in heavier optional
 dependencies and are imported lazily, on first use.
 """
 
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 __author__ = "Dinakar S"
 __description__ = "MCP vulnerability detection with a reproducible benchmark"
 

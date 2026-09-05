@@ -33,5 +33,12 @@
     "reportable": 1,
     "per_100_loc": 0.008,
     "adjudicated": "all 23 reviewed by hand; the single reportable finding (subprocess.run([...], shell=True) in src/mcp/cli/cli.py) is a true positive, the remaining 22 are informational and are test fixtures, documentation examples, or deliberately hostile hostnames inside the SDK's own security tests"
+  },
+  "baseline_v0_3_0": {
+    "note": "Measured after the fourteen CVE-backed rules of 0.3.0 and the file-level gates.",
+    "raw_findings": 38,
+    "reportable": 3,
+    "per_100_loc": 0.013,
+    "adjudicated": "all 38 reviewed by hand. 35 informational: SDK tests that deliberately construct an unprotected transport, example files with placeholder client secrets, hostile hostnames inside the SDK's own security tests. Three reportable: (1) src/fetch server.py:121, the official fetch server retrieves whatever URL the model supplies with no private-address check, a real code path and the design of that tool; (2) src/mcp/cli/cli.py:48, subprocess.run on an argument list with shell=True, cmd from a fixed set, true by the rule's definition and not exploitable in practice; (3) src/mcp/server/transport_security.py:48, the middleware's backward-compatibility fallback constructs TransportSecuritySettings with protection off, overridden by the servers that enable it by default, so a false positive on intent. Two hits on the git server (repo.git.diff with a caller target, the CVE-2025-68144 line) disappeared for the right reason: the fixed code rejects option-shaped targets three lines above, and the rule now stands down in any file that checks for a leading '-'."
   }
 }

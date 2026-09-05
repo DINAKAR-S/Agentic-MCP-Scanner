@@ -102,7 +102,14 @@ pip install "mcpvuln[all]"         # all of the above
 **From a GitHub release**, without PyPI:
 
 ```bash
-pip install https://github.com/DINAKAR-S/Agentic-MCP-Scanner/releases/download/v0.2.0/mcpvuln-0.2.0-py3-none-any.whl
+pip install https://github.com/DINAKAR-S/Agentic-MCP-Scanner/releases/download/v0.3.0/mcpvuln-0.3.0-py3-none-any.whl
+```
+
+**As a container**, from GitHub Packages. The scan runs offline as an unprivileged user
+against a read-only mount of your checkout:
+
+```bash
+docker run --rm -v "$PWD:/scan:ro" ghcr.io/dinakar-s/mcpvuln /scan --out /tmp -q
 ```
 
 **From source**, which is what you want if you intend to run the benchmark or the demo:
@@ -117,7 +124,7 @@ pip install -e "mcp-scan[all]"
 
 ```bash
 mcpvuln --version
-mcpvuln --self-check      # validates the rule set: 29 rules, no duplicate ids
+mcpvuln --self-check      # validates the rule set: 44 rules, no duplicate ids
 ```
 
 </details>
@@ -138,16 +145,23 @@ mcpvuln --self-check                                 # validate the pattern set
 
 ## What it detects
 
-29 rules across four layers, each carrying a confidence prior and CVSS v4.0 base metrics.
+44 rules across four layers, each carrying a confidence prior and CVSS v4.0 base metrics.
 
 | Layer | Covers |
 |---|---|
-| **MCP** | JWT verification disabled, weak HS256 secrets, agent-card auto-verification, audit-log mutation, privileged containers and `docker.sock` mounts, pipe-to-shell installs, tool-poisoning sinks, plaintext transport to non-loopback hosts |
-| **Agentic AI** | Trust scores computed but never enforced as an authorisation floor, unscoped cross-agent memory queries, shell and REPL tools handed to an agent, unsigned goal mutation |
+| **MCP** | JWT verification disabled, weak HS256 secrets, agent-card auto-verification, audit-log mutation, privileged containers and `docker.sock` mounts, pipe-to-shell installs, tool-poisoning sinks, plaintext transport to non-loopback hosts, **DNS-rebinding protection disabled** (CVE-2025-66414/66416), **all-interface binds with no authentication** (CVE-2026-23744), **one HTTP transport shared by every client** (CVE-2026-25536), **line jumping** in tool descriptions, **cross-server tool shadowing**, **invisible Unicode** in tool metadata |
+| **Agentic AI** | Trust scores computed but never enforced as an authorisation floor, unscoped cross-agent memory queries, shell and REPL tools handed to an agent, a shell started through `["bash", "-lc", ...]`, unsigned goal mutation |
 | **LLM** | Untrusted input concatenated into a system prompt, model context populated from a fetched or decoded remote source |
-| **Traditional web** | Command injection, SQL injection, XSS, path traversal, hardcoded secrets, weak crypto, insecure RNG, unsafe deserialisation, dynamic execution |
+| **Traditional web** | Command injection (including `execSync` on a template literal, `spawn` with `shell: true`, `asyncio.create_subprocess_shell`), **argument injection** into `git` and friends (CVE-2025-68144), **SSRF** from a tool's URL argument (CVE-2025-65513), SQL injection, XSS, path traversal including **prefix-only containment checks** (CVE-2025-66689), hardcoded secrets, weak crypto, insecure RNG, unsafe deserialisation, dynamic execution |
 
-Run `mcpvuln --self-check` to list them and validate the set.
+Run `mcpvuln --self-check` to list them and validate the set. [docs/cve-coverage.md](docs/cve-coverage.md)
+maps each rule to the published vulnerability it mirrors, and lists the classes that
+deliberately have no rule and why.
+
+Two rules carry a **file-level gate**: they run only in files that define MCP tools
+(`requires`) and only when the file shows no defence (`absent`). An HTTP fetch of a
+caller-supplied URL is a vulnerability in a tool and a feature in an HTTP client
+library; a single-site regex cannot tell those apart, a gate can.
 
 ## How it works
 
@@ -192,6 +206,30 @@ on production code.** Read this as evidence that the rules fire and discriminate
 an estimate of recall on code the tool has not seen. The number that generalises is the
 false-positive rate below, measured on 285,463 lines nobody wrote for this tool.
 
+### The 2026 CVE corpus
+
+```bash
+python benchmark/score_demo.py --corpus 2026
+```
+
+The 22-instance corpus above is frozen: it is what the paper reports on, and it must keep
+scoring exactly as published. The classes disclosed as CVEs during 2025 and 2026 live in a
+second, separately scored pair, `demo/vulnerable-2026` and `demo/safe-2026`, with
+`demo/ground-truth-2026.json` naming the CVE each of its 16 instances mirrors:
+
+| | TP | FP | FN | Precision | Recall | F1 |
+|---|---|---|---|---|---|---|
+| **All layers** | 16 | 0 | 0 | **1.000** | **1.000** | **1.000** |
+| MCP | 6 | 0 | 0 | 1.000 | 1.000 | 1.000 |
+| Traditional web | 9 | 0 | 0 | 1.000 | 1.000 | 1.000 |
+| Agentic AI | 1 | 0 | 0 | 1.000 | 1.000 | 1.000 |
+
+A perfect score on a corpus written by the same hands that wrote the rules is the
+weakest kind of evidence there is. It proves each rule fires on its own shape and stays
+silent on the fixed shape, nothing more. The rules were then run on 55 third-party MCP
+servers chosen for being obscure rather than popular (840,905 lines); the changelog
+records what that found and what it corrected.
+
 ## The benchmark
 
 ```bash
@@ -210,6 +248,12 @@ Clones two official MCP reference implementations at pinned commits, scans them,
 |---|---|---|
 | v0.1.0 | 3,642 | 1.28 |
 | v0.2.0 | 23 | 0.008 |
+| v0.3.0 | 38 | 0.013 |
+
+The rise from 23 to 38 is the price of fourteen new rules, and 35 of the 38 are
+informational: SDK tests that deliberately construct an unprotected transport, example
+files with placeholder secrets, hostile hostnames inside the SDK's own security tests. The
+three reportable ones are listed in `benchmark/corpus.json` with a verdict each.
 
 ## What is not built yet
 
@@ -217,7 +261,7 @@ Being explicit, because the gap between what a security tool claims and what it 
 
 | Not built | What that means for you today |
 |---|---|
-| **Recall is not measured against a public vulnerable corpus** | The false-positive rate above is solid. The false-*negative* rate is not published, because the vulnerable corpus it was measured against is not yet released. Do not read a clean report as an absence of vulnerabilities. |
+| **Recall is measured only on fixtures** | Two public fixture sets (22 and 16 instances) and one pair of third-party deliberately vulnerable files. There is no large, independently labelled corpus of vulnerable MCP servers to measure against, and a scan of 55 real servers found real defects but cannot say how many it missed. Do not read a clean report as an absence of vulnerabilities. |
 | **No runtime or protocol-state analysis** | Detection is static and line-oriented. Vulnerabilities defined by protocol state, whether a nonce is checked before accept, whether a trust score gates an action, are localisable but not reliably classifiable. This is the main known ceiling. |
 | **No taint tracking** | A pattern sees one construct, not whether attacker-controlled data actually reaches it. Expect false positives on defensive code that mentions the same constructs. |
 | **Category assignment is weaker than localisation** | The tool is better at finding the vulnerable file than at naming the vulnerability. Adjacent categories, the three identity-forgery variants especially, get confused. |

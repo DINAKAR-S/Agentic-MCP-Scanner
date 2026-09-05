@@ -18,8 +18,13 @@ CI enforces all of this, so a green build on `main` is the same check.
 
 ## PyPI
 
-The package name `mcpvuln` is registered to this project and 0.2.0 is published. A
-version number can never be reused on PyPI, so treat an upload as final.
+The package name `mcpvuln` is registered to this project; 0.2.0, 0.2.1 and 0.3.0 are
+published. A version number can never be reused on PyPI, so treat an upload as final.
+
+The container image and the release assets need no manual step: pushing a `v*` tag runs
+`.github/workflows/release.yml`, which builds the image from `Dockerfile`, pushes it to
+`ghcr.io/dinakar-s/mcpvuln` (GitHub Packages) with the version and `latest` tags, smoke
+tests the pushed image, and attaches the sdist and wheel to the GitHub release.
 
 The token lives in keywarden as `pypi/prod`, so the value never has to be handled
 directly:
