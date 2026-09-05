@@ -12,8 +12,8 @@ authors:
     affiliation: "TIFAC-CORE in Cyber Security, Amrita Vishwa Vidyapeetham, Coimbatore"
 repository-code: "https://github.com/DINAKAR-S/Agentic-MCP-Scanner"
 license: MIT
-version: 0.2.0
-date-released: "2026-09-04"
+version: 0.2.1
+date-released: "2026-09-05"
 keywords:
   - model context protocol
   - mcp

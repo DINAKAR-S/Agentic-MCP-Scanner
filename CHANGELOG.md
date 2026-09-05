@@ -2,6 +2,21 @@
 
 Notable changes to mcpvuln. Versions follow [semantic versioning](https://semver.org/).
 
+## [0.2.1] - 2026-09-05
+
+Packaging only. No change to detection, scoring or reporting.
+
+- **Fixed the PyPI page showing only a one-line summary instead of the README.**
+  `python -m build` builds the wheel from the sdist, and the README lived only at the
+  repository root, so it was absent at wheel-build time and `setup.py` silently fell
+  back to the short description. A PyPI-facing README now ships inside the package
+  directory, written with absolute links because relative ones do not resolve on PyPI.
+  `setup.py` also rejects a stub shorter than 500 characters rather than degrading
+  quietly.
+- Expanded project URLs from two to eight: homepage, source, issues, changelog,
+  benchmark, contributing, security policy and release notes.
+- Added classifiers for Python 3.13, console environment, testing topic and typing.
+
 ## [0.2.0] - 2026-09-04
 
 The headline: on 285,463 lines of clean, officially maintained MCP code, findings went
@@ -88,5 +103,6 @@ Tagged so the version evaluated in the accompanying paper stays reproducible. **
 recommended for use**: measured at 1.28 findings per 100 lines of clean code, of which an
 adjudicated sample of twenty-five contained no true positives.
 
+[0.2.1]: https://github.com/DINAKAR-S/Agentic-MCP-Scanner/releases/tag/v0.2.1
 [0.2.0]: https://github.com/DINAKAR-S/Agentic-MCP-Scanner/releases/tag/v0.2.0
 [0.1.0]: https://github.com/DINAKAR-S/Agentic-MCP-Scanner/releases/tag/v0.1.0

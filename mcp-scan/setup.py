@@ -12,11 +12,21 @@ _DESCRIPTION = ("Vulnerability detection for Model Context Protocol codebases, "
 
 
 def _long_description() -> str:
+    """The PyPI page body.
+
+    mcp-scan/README.md is written for PyPI: absolute links, since relative ones do
+    not resolve there, and no repository-only sections. It ships in the sdist, which
+    matters because `python -m build` builds the wheel from the sdist, so a README
+    kept only at the repository root is not present at wheel-build time and the
+    description silently degrades to the one-line summary.
+    """
     for candidate in (os.path.join(_HERE, "README.md"),
                       os.path.join(os.path.dirname(_HERE), "README.md")):
         try:
             with open(candidate, encoding="utf-8") as fh:
-                return fh.read()
+                text = fh.read()
+            if len(text) > 500:          # a real page, not a stub
+                return text
         except OSError:
             continue
     return _DESCRIPTION
@@ -38,7 +48,7 @@ EXTRAS["all"] = sorted({d for k, v in EXTRAS.items() if k != "dev" for d in v})
 
 setup(
     name="mcpvuln",
-    version="0.2.0",
+    version="0.2.1",
     author="Dinakar S",
     author_email="dinakars2003@gmail.com",
     description=_DESCRIPTION,
@@ -57,8 +67,13 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "Topic :: Security",
         "Topic :: Software Development :: Quality Assurance",
+        "Topic :: Software Development :: Testing",
+        "Environment :: Console",
+        "Natural Language :: English",
+        "Typing :: Typed",
     ],
     python_requires=">=3.9",
     install_requires=CORE,
@@ -66,8 +81,14 @@ setup(
     entry_points={"console_scripts": ["mcpvuln=mcpvuln.cli:main"]},
     keywords="security, vulnerability, analysis, mcp, model-context-protocol, ai, llm, benchmark",
     project_urls={
-        "Bug Reports": "https://github.com/DINAKAR-S/Agentic-MCP-Scanner/issues",
-        "Source": "https://github.com/DINAKAR-S/Agentic-MCP-Scanner/",
+        "Homepage": "https://github.com/DINAKAR-S/Agentic-MCP-Scanner",
+        "Source": "https://github.com/DINAKAR-S/Agentic-MCP-Scanner",
+        "Issues": "https://github.com/DINAKAR-S/Agentic-MCP-Scanner/issues",
+        "Changelog": "https://github.com/DINAKAR-S/Agentic-MCP-Scanner/blob/main/CHANGELOG.md",
+        "Benchmark": "https://github.com/DINAKAR-S/Agentic-MCP-Scanner/tree/main/mcp-scan/benchmark",
+        "Contributing": "https://github.com/DINAKAR-S/Agentic-MCP-Scanner/blob/main/CONTRIBUTING.md",
+        "Security Policy": "https://github.com/DINAKAR-S/Agentic-MCP-Scanner/blob/main/SECURITY.md",
+        "Release Notes": "https://github.com/DINAKAR-S/Agentic-MCP-Scanner/releases",
     },
     include_package_data=True,
     zip_safe=False,

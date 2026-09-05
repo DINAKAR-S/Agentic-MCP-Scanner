@@ -138,7 +138,7 @@ mcpvuln --self-check                                 # validate the pattern set
 
 ## What it detects
 
-Twenty-seven rules across four layers, each carrying a confidence prior and CVSS v4.0 base metrics.
+29 rules across four layers, each carrying a confidence prior and CVSS v4.0 base metrics.
 
 | Layer | Covers |
 |---|---|
