@@ -3,14 +3,27 @@
 [![CI](https://github.com/DINAKAR-S/Agentic-MCP-Scanner/actions/workflows/ci.yml/badge.svg)](https://github.com/DINAKAR-S/Agentic-MCP-Scanner/actions/workflows/ci.yml)
 [![Tests](https://img.shields.io/badge/tests-140%20passing-brightgreen)](mcp-scan/tests)
 [![False positives](https://img.shields.io/badge/false%20positives-0.008%20per%20100%20LOC-brightgreen)](mcp-scan/benchmark)
-[![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/)
-[![License](https://img.shields.io/github/license/DINAKAR-S/Agentic-MCP-Scanner)](LICENSE)
-[![Code size](https://img.shields.io/github/languages/code-size/DINAKAR-S/Agentic-MCP-Scanner)](.)
-[![Stars](https://img.shields.io/github/stars/DINAKAR-S/Agentic-MCP-Scanner?style=flat)](https://github.com/DINAKAR-S/Agentic-MCP-Scanner/stargazers)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
 
-Vulnerability detection for Model Context Protocol codebases, with a benign control corpus so you can tell how much of the output is noise.
+**A vulnerability scanner for MCP that proves how often it is wrong.**
 
-**What this is for.** MCP lets an AI agent discover and call tools at runtime, across servers somebody else operates. That moves the unit of trust from a single function call to a whole protocol session, and the vulnerabilities that follow, forged agent identities, unenforced trust scores, rewritable audit logs, one tenant's context served to another, have no equivalent in ordinary application security. Existing scanners either do not look at that layer or, when they do, report so much noise that nobody reads the output. This project is an attempt to detect those vulnerabilities **and** to prove how much of what it reports is real, by measuring itself against code that has nothing wrong with it.
+MCP lets an agent discover and call tools at runtime, from servers somebody else
+operates. That moves the unit of trust from a single function call to a whole protocol
+session, and the failures that follow have no equivalent in ordinary application
+security: forged agent identities, trust scores computed but never enforced, audit logs
+that can be rewritten, one tenant's context served to another.
+
+There are scanners already. What none of them ships is a way to tell how much of the
+output is real. They are evaluated only against code known to be broken, so they can
+measure what they catch but never what they invent. That is the part nobody tests,
+because it requires scanning code that has nothing wrong with it and counting what comes
+back. This one ships that corpus, and every precision number below is produced by running
+against it.
+
+> Status: 140 tests, CI on Linux and Windows across Python 3.9 to 3.12, and a build that
+> fails if the false-positive rate on clean code rises above 0.05 per 100 lines. It
+> currently sits at 0.008.
 
 ---
 
