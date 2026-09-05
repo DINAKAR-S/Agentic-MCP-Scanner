@@ -163,6 +163,37 @@ ingest  ->  detect  ->  score  ->  report
 
 The boundary between stages is a versioned JSON document, the **scan contract**. Save it with `--json`, diff it across commits, score it offline, feed it to something else.
 
+## Precision, recall and F1
+
+```bash
+python benchmark/score_demo.py
+```
+
+`demo/ground-truth.json` documents all 22 planted vulnerabilities with their locations
+and categories. `demo/safe` is the same code with every one of them fixed, so it
+contributes only true negatives. Both halves and the ground truth are public, so these
+numbers are reproducible by anyone:
+
+| | TP | FP | FN | Precision | Recall | F1 |
+|---|---|---|---|---|---|---|
+| **All layers** | 19 | 0 | 3 | **1.000** | **0.864** | **0.927** |
+| LLM | 1 | 0 | 0 | 1.000 | 1.000 | 1.000 |
+| Traditional web | 5 | 0 | 0 | 1.000 | 1.000 | 1.000 |
+| MCP | 11 | 0 | 1 | 1.000 | 0.917 | 0.957 |
+| Agentic AI | 2 | 0 | 2 | 1.000 | 0.500 | 0.667 |
+
+The three misses are worth naming, because they are not random. All three are properties
+of **protocol state** rather than of any line of code: whether a plaintext endpoint is
+reachable in production, whether a decaying trust score is enforced as an authorisation
+floor, and whether a goal change carries an integrity check. A line-oriented matcher can
+reach the file but cannot decide the question, which is why the Agentic AI layer scores
+lowest and why runtime analysis is the roadmap.
+
+**These fixtures carry one clean instance of each class, so detection here is easier than
+on production code.** Read this as evidence that the rules fire and discriminate, not as
+an estimate of recall on code the tool has not seen. The number that generalises is the
+false-positive rate below, measured on 285,463 lines nobody wrote for this tool.
+
 ## The benchmark
 
 ```bash

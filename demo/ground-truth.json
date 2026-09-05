@@ -1,0 +1,28 @@
+{
+  "description": "Ground truth for demo/vulnerable. Every planted vulnerability, with its location and its category in the Section 3 taxonomy. demo/safe is the same code with all of them fixed, so it contributes only true negatives. Used by benchmark/score_demo.py to compute precision, recall and F1.",
+  "unit_of_evaluation": "one (file, category) pair; multiple findings collapsing onto the same pair count once",
+  "instances": [
+    {"id": "D01", "file": "server.py",   "lines": [19, 19], "category": "cross_tenant_context_bleed", "layer": "MCP",             "what": "module-level session cache with no tenant in the key"},
+    {"id": "D02", "file": "server.py",   "lines": [22, 22], "category": "hardcoded_secrets",          "layer": "Traditional Web", "what": "database credential committed in source"},
+    {"id": "D03", "file": "server.py",   "lines": [29, 29], "category": "sql_injection",              "layer": "Traditional Web", "what": "SQL built by string formatting"},
+    {"id": "D04", "file": "server.py",   "lines": [35, 35], "category": "command_injection",          "layer": "Traditional Web", "what": "user input concatenated into os.system"},
+    {"id": "D05", "file": "server.py",   "lines": [40, 40], "category": "command_injection",          "layer": "Traditional Web", "what": "subprocess with shell=True on a caller-supplied value"},
+    {"id": "D06", "file": "server.py",   "lines": [46, 46], "category": "unsafe_deserialization",     "layer": "Traditional Web", "what": "pickle.loads on untrusted bytes"},
+    {"id": "D07", "file": "server.py",   "lines": [51, 53], "category": "prompt_injection",           "layer": "LLM",             "what": "untrusted input concatenated into a system prompt"},
+    {"id": "D08", "file": "server.py",   "lines": [60, 61], "category": "cross_tenant_context_bleed", "layer": "MCP",             "what": "cache write and read keyed without a tenant"},
+    {"id": "D09", "file": "server.py",   "lines": [66, 67], "category": "insecure_transport",         "layer": "MCP",             "what": "plaintext HTTP to a non-loopback host"},
+    {"id": "D10", "file": "identity.py", "lines": [9, 11],  "category": "identity_trust_forgery",     "layer": "MCP",             "what": "short symmetric HS256 signing secret in source"},
+    {"id": "D11", "file": "identity.py", "lines": [16, 16], "category": "identity_trust_forgery",     "layer": "MCP",             "what": "JWT decoded with signature verification disabled"},
+    {"id": "D12", "file": "identity.py", "lines": [24, 25], "category": "identity_trust_forgery",     "layer": "MCP",             "what": "agent card marked verified with no issuer check"},
+    {"id": "D13", "file": "identity.py", "lines": [30, 40], "category": "trust_enforcement",          "layer": "Agentic AI",      "what": "delegation trust decays but is never enforced as a floor"},
+    {"id": "D14", "file": "agent.py",    "lines": [11, 11], "category": "excessive_agency",           "layer": "Agentic AI",      "what": "agent handed shell, REPL and file-write tools"},
+    {"id": "D15", "file": "agent.py",    "lines": [20, 20], "category": "cross_agent_memory",         "layer": "Agentic AI",      "what": "memory search with no agent scoping"},
+    {"id": "D16", "file": "agent.py",    "lines": [24, 26], "category": "goal_integrity",             "layer": "Agentic AI",      "what": "goal overwritten with no integrity check"},
+    {"id": "D17", "file": "audit.py",    "lines": [9, 9],   "category": "audit_integrity",            "layer": "MCP",             "what": "audit log rows deleted"},
+    {"id": "D18", "file": "audit.py",    "lines": [14, 14], "category": "audit_integrity",            "layer": "MCP",             "what": "audit log rows rewritten"},
+    {"id": "D19", "file": "deploy.yml",  "lines": [7, 7],   "category": "container_escape",           "layer": "MCP",             "what": "privileged container"},
+    {"id": "D20", "file": "deploy.yml",  "lines": [9, 10],  "category": "container_escape",           "layer": "MCP",             "what": "Docker socket and host filesystem mounted"},
+    {"id": "D21", "file": "install.sh",  "lines": [5, 5],   "category": "supply_chain",               "layer": "MCP",             "what": "curl piped into a shell"},
+    {"id": "D22", "file": "install.sh",  "lines": [6, 6],   "category": "supply_chain",               "layer": "MCP",             "what": "wget piped into a shell"}
+  ]
+}
