@@ -1,5 +1,13 @@
 # mcpvuln
 
+[![CI](https://github.com/DINAKAR-S/Agentic-MCP-Scanner/actions/workflows/ci.yml/badge.svg)](https://github.com/DINAKAR-S/Agentic-MCP-Scanner/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-140%20passing-brightgreen)](mcp-scan/tests)
+[![False positives](https://img.shields.io/badge/false%20positives-0.008%20per%20100%20LOC-brightgreen)](mcp-scan/benchmark)
+[![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/)
+[![License](https://img.shields.io/github/license/DINAKAR-S/Agentic-MCP-Scanner)](LICENSE)
+[![Code size](https://img.shields.io/github/languages/code-size/DINAKAR-S/Agentic-MCP-Scanner)](.)
+[![Stars](https://img.shields.io/github/stars/DINAKAR-S/Agentic-MCP-Scanner?style=flat)](https://github.com/DINAKAR-S/Agentic-MCP-Scanner/stargazers)
+
 Vulnerability detection for Model Context Protocol codebases, with a benign control corpus so you can tell how much of the output is noise.
 
 **What this is for.** MCP lets an AI agent discover and call tools at runtime, across servers somebody else operates. That moves the unit of trust from a single function call to a whole protocol session, and the vulnerabilities that follow, forged agent identities, unenforced trust scores, rewritable audit logs, one tenant's context served to another, have no equivalent in ordinary application security. Existing scanners either do not look at that layer or, when they do, report so much noise that nobody reads the output. This project is an attempt to detect those vulnerabilities **and** to prove how much of what it reports is real, by measuring itself against code that has nothing wrong with it.
@@ -151,6 +159,30 @@ ruff check mcp-scan/mcpvuln
 ```
 
 The test suite encodes the defects that shipped in v0.1.0 as regression tests: the word "should" must not be a supply-chain attack, `includes(` must not be weak cryptography, `allowed_origins=["http://127.0.0.1"]` must not be rogue server impersonation, and no finding may be silently truncated out of a report.
+
+## Contributing
+
+Rules and patterns are the part most worth contributing to, and the bar is specific:
+**a new rule must come with a true-positive test, a false-positive test, and a run of
+the benign benchmark showing it costs nothing.** See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Found a vulnerability class the scanner misses? Open an issue with a minimal code
+sample. That is the most useful thing anyone can send.
+
+## Security
+
+To report a vulnerability **in this tool**, see [SECURITY.md](SECURITY.md). Please do not
+open a public issue for it.
+
+## Citing this work
+
+This tool accompanies a paper under review. See [CITATION.cff](CITATION.cff), or use
+GitHub's "Cite this repository" button.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md). The short version: v0.2.0 reduced false positives on
+clean code by 160x and made scoring reproducible.
 
 ## License
 

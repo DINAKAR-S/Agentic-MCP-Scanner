@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+title: "mcpvuln: vulnerability detection for Model Context Protocol codebases"
+message: "If you use this software or its benchmark, please cite it."
+type: software
+authors:
+  - family-names: "Selvakumar"
+    given-names: "Dinakar"
+    affiliation: "Amrita Vishwa Vidyapeetham, Amrita School of Engineering, Chennai"
+    email: dinakars2003@gmail.com
+  - family-names: "M"
+    given-names: "Rohini"
+    affiliation: "TIFAC-CORE in Cyber Security, Amrita Vishwa Vidyapeetham, Coimbatore"
+repository-code: "https://github.com/DINAKAR-S/Agentic-MCP-Scanner"
+license: MIT
+version: 0.2.0
+date-released: "2026-09-04"
+keywords:
+  - model context protocol
+  - mcp
+  - agentic ai
+  - ai agent security
+  - vulnerability detection
+  - static analysis
+  - security benchmark
+  - cvss
+  - ssvc
+abstract: >-
+  A vulnerability scanner for Model Context Protocol codebases, released with a
+  benign control corpus so that its false-positive rate is measurable rather than
+  assumed. Detection covers four layers (LLM, Agentic AI, MCP, and traditional web),
+  runs offline with no API key, and scores every finding with a computed CVSS v4.0
+  vector and an SSVC priority rather than model-generated prose. The accompanying
+  benchmark pairs a confirmed-exploitable ground truth with 285,463 lines of
+  officially maintained MCP code containing none of the vulnerability classes under
+  test, which is what makes precision computable at all.
