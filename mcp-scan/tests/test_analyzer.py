@@ -235,3 +235,31 @@ def test_pattern_module_does_not_flag_itself():
     from mcpvuln import patterns as _p
     src = open(_p.__file__, encoding="utf-8").read()
     assert VulnerabilityAnalyzer().analyze(src, "mcpvuln/patterns.py") == []
+
+
+# ------------------------------------------------- SQL injection outside Python
+# Found by scanning a real TypeScript MCP server: the rule only matched Python's
+# execute(), so db.query("SELECT ..." + x) was missed, and the memory-scoping rule
+# claimed it instead and labelled it cross_agent_memory.
+
+def test_js_sql_concatenation_is_sql_injection():
+    f = scan('const rows = db.query("SELECT * FROM banks WHERE ifsc = \'" + code + "\'");\n',
+             path="api.ts")
+    assert "sql_injection" in cats(f)
+    assert "cross_agent_memory" not in cats(f)
+
+
+def test_js_template_literal_sql_is_sql_injection():
+    f = scan("connection.query(`SELECT * FROM t WHERE id = ${id}`)\n", path="api.js")
+    assert "sql_injection" in cats(f)
+
+
+def test_parameterised_js_query_is_not_a_finding():
+    f = scan('db.query("SELECT * FROM t WHERE id = ?", [id])\n', path="api.js")
+    assert "sql_injection" not in cats(f)
+
+
+def test_database_query_is_not_an_unscoped_memory_search():
+    """db.query and pool.query are relational calls, not vector-store searches."""
+    for src in ('db.query("SELECT 1")\n', 'pool.query("SELECT 1")\n'):
+        assert "cross_agent_memory" not in cats(scan(src, path="api.js"))

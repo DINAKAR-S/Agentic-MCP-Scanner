@@ -90,7 +90,22 @@ PATTERNS: List[Pattern] = [
     Pattern(
         id="web.sql_injection.format",
         category="sql_injection", layer=LAYER_WEB,
-        regex=r"\b(?:execute|executemany)\s*\(\s*(?:f[\"']|[\"'][^\"']*[\"']\s*%|[\"'][^\"']*[\"']\s*\+|[\"'][^\"']*[\"']\s*\.format\s*\()",
+        regex=(
+            # Python: execute("..." % x), ("..." + x), f"...", .format(
+            r"\b(?:execute|executemany)\s*\(\s*"
+            r"(?:f[\"']"
+            r"|[\"'][^\"']*[\"']\s*%"
+            r"|[\"'][^\"']*[\"']\s*\+"
+            r"|[\"'][^\"']*[\"']\s*\.format\s*\()"
+            r"|"
+            # JavaScript and TypeScript: db.query("SELECT ..." + x)
+            r"\.(?:query|execute|raw)\s*\(\s*[\"'][^\"']*"
+            r"(?:SELECT|INSERT|UPDATE|DELETE|DROP)[^)]{0,160}?[\"'][\s\"']*\+"
+            r"|"
+            # template literal interpolating into SQL
+            r"\.(?:query|execute|raw)\s*\(\s*`[^`]*"
+            r"(?:SELECT|INSERT|UPDATE|DELETE|DROP)[^`]*\$\{"
+        ),
         description="SQL built by string formatting or concatenation rather than parameter binding.",
         confidence=0.85,
         cvss=_cvss(vc="H", vi="H", va="L"),
@@ -332,9 +347,14 @@ PATTERNS: List[Pattern] = [
     Pattern(
         id="agent.memory.unscoped_query",
         category="cross_agent_memory", layer=LAYER_AGENT,
-        regex=r"\b(?!re\.)(?:\w*(?:memory|vector|index|store|collection|db|embeddings?)\w*)"
-              r"\.(?:search|query|similarity_search)\s*"
-              r"\((?![^)]*(?:agent_id|tenant|namespace|owner|scope|filter))[^)]*\)",
+        regex=(
+            # A vector or memory store, not a relational handle: db.query and
+            # pool.query are SQL calls and belong to the sql_injection rule.
+            r"\b(?!re\.)\w*(?:memory|vector|embedding|index|collection)\w*"
+            r"\.(?:search|query|similarity_search)\s*\("
+            r"(?![^)]*(?:agent_id|tenant|namespace|owner|scope|filter))"
+            r"[^)]{0,120}\)"
+        ),
         description="Vector or memory search with no agent/tenant scoping in the call.",
         confidence=0.55, ignorecase=True,
         cvss=_cvss(pr="L", vc="H"),
