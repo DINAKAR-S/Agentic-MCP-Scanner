@@ -45,9 +45,11 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Smoke test the pushed image
+        # Docker references must be lowercase; the repository owner is not.
         run: |
-          docker run --rm ghcr.io/${{ github.repository_owner }}/mcpvuln --self-check
-          docker run --rm -v "$PWD/demo:/scan:ro" ghcr.io/${{ github.repository_owner }}/mcpvuln /scan/vulnerable --out /tmp -q
+          IMAGE="ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/mcpvuln"
+          docker run --rm "$IMAGE" --self-check
+          docker run --rm -v "$PWD/demo:/scan:ro" "$IMAGE" /scan/vulnerable --out /tmp -q
 
   dist:
     runs-on: ubuntu-latest
