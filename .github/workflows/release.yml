@@ -52,6 +52,8 @@ jobs:
           docker run --rm -v "$PWD/demo:/scan:ro" "$IMAGE" /scan/vulnerable --out /tmp -q
 
   dist:
+    # Release assets need a tag to attach to; a manual run only rebuilds the image.
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
